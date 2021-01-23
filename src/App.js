@@ -2,7 +2,7 @@ import {NavBar} from "./app/NavBar";
 import {Grid} from "@material-ui/core";
 import {Route, Switch} from "react-router-dom"
 import {PairSettings} from "./features/pairs/PairSettings";
-import {Practice} from "./features/pairs/Practice";
+import {Practice} from "./features/practice/Practice";
 
 export default function App() {
 	return (

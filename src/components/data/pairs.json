@@ -1,7 +1,8 @@
 [
     {
         "term": "a term",
-        "definition": "a definition"
+        "definition": "a definition",
+        "learning_stage": 0
     },
     {
         "term": "another term",

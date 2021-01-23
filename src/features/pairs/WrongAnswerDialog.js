@@ -8,22 +8,24 @@ import {
 	DialogTitle,
 	TextField,
 } from "@material-ui/core";
+import {useDispatch, useSelector} from "react-redux";
+import {submitAnswer} from "./pairsSlice";
 
-export default function WrongAnswerDialog(props) {
+export const WrongAnswerDialog = () => {
+	const dispatch = useDispatch()
+
+	const pair = useSelector(state => state.pairs.currentPair)
+	const status = useSelector(state => state.pairs.status)
+	const open = status === 'wrong'
+
 	const [answer, setAnswer] = useState("");
 	const [showAnswer, setShowAnswer] = useState(false)
 
-	function onToggle() {
-		setShowAnswer(true)
-	}
+	const onChange = e => setAnswer(e.target.value)
 
-	function onChange(e) {
-		setAnswer(e.target.value)
-	}
-
-	function onKeyPress(e) {
+	const onKeyPress = e => {
 		if (e.key === "Enter") {
-			props.submitAnswer(answer)
+			dispatch(submitAnswer(answer))
 			setAnswer("")
 			setShowAnswer(false)
 		}
@@ -31,21 +33,21 @@ export default function WrongAnswerDialog(props) {
 
 	return (
 		<div>
-			<Dialog open={props.open}>
+			<Dialog open={open}>
 				<DialogTitle>
 					{
 						showAnswer
-						? "Enter Correct Answer"
-						: "Wrong Answer"
+							? "Enter Correct Answer"
+							: "Wrong Answer"
 					}
 				</DialogTitle>
 				<DialogContent>
 					<DialogContentText variant="h3" color="textPrimary">
-						Term: {props.pair.term}
+						Term: {open ? pair.id : ''}
 					</DialogContentText>
 					{
 						showAnswer
-						?
+							?
 							<TextField
 								autoFocus
 								placeholder="Enter Definition Here"
@@ -56,18 +58,18 @@ export default function WrongAnswerDialog(props) {
 								onChange={onChange}
 								onKeyPress={onKeyPress}
 							/>
-						:
+							:
 							<DialogContentText variant="h3">
-								Correct Answer: {props.pair.definition}
+								Correct Answer: {open ? pair.definition : ''}
 							</DialogContentText>
 					}
 				</DialogContent>
 				{
 					showAnswer
-					? ""
-					:
+						? ""
+						:
 						<DialogActions>
-							<Button autoFocus onClick={onToggle}>
+							<Button autoFocus onClick={() => setShowAnswer(true)}>
 								Next
 							</Button>
 						</DialogActions>

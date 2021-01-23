@@ -1,9 +1,9 @@
 import {useState} from "react";
 import {AppBar, IconButton, Toolbar, Typography} from "@material-ui/core";
-import NavDrawer from "./NavDrawer";
+import {NavDrawer} from "./NavDrawer";
 import {Menu} from "@material-ui/icons";
 
-export default function NavBar(props) {
+export const NavBar = () => {
 	const [navDrawerOpen, setNavDrawerOpen] = useState(false)
 
 	function toggleNavDrawer() {
@@ -22,7 +22,7 @@ export default function NavBar(props) {
 					</Typography>
 				</Toolbar>
 			</AppBar>
-			<NavDrawer open={navDrawerOpen} toggleNavDrawer={toggleNavDrawer}/>
+			<NavDrawer open={navDrawerOpen} onClose={toggleNavDrawer}/>
 		</div>
 	)
 }

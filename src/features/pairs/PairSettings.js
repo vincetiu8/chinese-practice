@@ -1,18 +1,17 @@
-import {DeletePairsForm} from "./DeletePairsForm";
+import {DeletePairsCard} from "./DeletePairsCard";
 import {Grid} from "@material-ui/core";
 import {PairsList} from "./PairsList";
 import {AddPairsForm} from "./AddPairsForm";
 import {useEffect} from "react";
 import {useDispatch} from "react-redux";
-import {savePairs} from "./pairsSlice";
+import {saveInfo} from "./pairsSlice";
 import {EditPairDialog} from "./EditPairDialog";
 
 export const PairSettings = () => {
 	const dispatch = useDispatch()
 
-
 	useEffect(() => {
-		const onUnload = () => dispatch(savePairs())
+		const onUnload = () => dispatch(saveInfo())
 		window.addEventListener('beforeunload', onUnload)
 		return () => {
 			window.removeEventListener('beforeunload', onUnload)
@@ -28,7 +27,7 @@ export const PairSettings = () => {
 					<AddPairsForm/>
 				</Grid>
 				<Grid item>
-					<DeletePairsForm/>
+					<DeletePairsCard/>
 				</Grid>
 				<Grid item>
 					<PairsList/>

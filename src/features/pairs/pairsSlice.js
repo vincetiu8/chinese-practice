@@ -12,17 +12,30 @@ const initialState = pairsAdapter.getInitialState({
 	editingPair: null,
 	solvingPair: null,
 	pastSolvingPairs: [],
-	status: 'loading'
+	status: 'loading',
+	settings: {
+		lostPointsOnFail: 1,
+		gainedPointsOnSuccess: 1,
+		startingPoints: -3,
+		minimumGapBetweenElements: 5,
+	}
 })
 
 const pairsSlice = createSlice({
 	name: 'pairs',
 	initialState,
 	reducers: {
-		fetchPairs(state, action) {
-			const json = localStorage.getItem('pairs')
-			const storedPairs = JSON.parse(json)
-			pairsAdapter.upsertMany(state, storedPairs)
+		fetchInfo(state, action) {
+			let json = localStorage.getItem('chinese-practice/pairs')
+			if (json !== null) {
+				const storedPairs = JSON.parse(json)
+				pairsAdapter.upsertMany(state, storedPairs)
+			}
+
+			json = localStorage.getItem('chinese-practice/settings')
+			if (json !== null) {
+				state.settings = JSON.parse(json)
+			}
 			state.loadStatus = 'loaded'
 			state.status = 'idle'
 		},
@@ -33,14 +46,13 @@ const pairsSlice = createSlice({
 			pairsAdapter.removeOne(state, action.payload)
 		},
 		deletePracticeInfo(state, action) {
-			pairsAdapter.updateMany(state, state.entities.map(pair => {
-				return {
-					...pair,
-					rank: 0,
-					seen: false,
-					lastLearned: Date()
-				}
-			}))
+			const updatedPairs = Object.values(state.ids).map(id => {
+				const pair = state.entities[id]
+				pair.rank = 0
+				pair.seen = false
+				return pair
+			})
+			pairsAdapter.updateMany(state, updatedPairs)
 		},
 		addPairs: {
 			reducer: (state, action) => {
@@ -51,24 +63,29 @@ const pairsSlice = createSlice({
 					return {
 						...pair,
 						rank: 0,
-						seen: false,
-						lastLearned: Date()
+						seen: false
 					}
 				})
 				return {payload: pairs}
 			}
 		},
-		savePairs(state, action) {
-			const json = JSON.stringify(state.entities)
-			console.log(json)
-			localStorage.setItem('pairs', json)
+		saveInfo(state, action) {
+			let json = JSON.stringify(state.entities)
+			localStorage.setItem('chinese-practice/pairs', json)
+			json = JSON.stringify(state.settings)
+			localStorage.setItem('chinese-practice/settings', json)
 		},
 		editPair(state, action) {
 			const {newId, definition} = action.payload
 			const existingPair = state.entities[state.editingPair.id]
 			if (existingPair) {
-				existingPair.id = newId
-				existingPair.definition = definition
+				pairsAdapter.removeOne(state, state.editingPair.id)
+				pairsAdapter.upsertOne(state, {
+					id: newId,
+					definition: definition,
+					rank: 0,
+					seen: false,
+				})
 			}
 			state.editingPair = null
 			state.solvingPair = null
@@ -81,7 +98,12 @@ const pairsSlice = createSlice({
 		updateSolvingPair(state, action) {
 			if (state.solvingPair !== null) {
 				state.pastSolvingPairs.push(state.solvingPair.id.toString())
-				if (state.pastSolvingPairs.length > Math.min(Object.keys(state.entities).length - 1, 2)) // todo: change later to be configurable
+				if (state.pastSolvingPairs.length >
+					Math.min(
+						Object.keys(state.entities).length - 1,
+						state.settings.minimumGapBetweenElements
+					)
+				)
 					state.pastSolvingPairs.shift()
 			}
 			state.status = 'solving'
@@ -89,7 +111,7 @@ const pairsSlice = createSlice({
 				if (!state.pastSolvingPairs.includes(id.toString())) {
 					state.solvingPair = state.entities[id]
 					if (!state.solvingPair.seen) {
-						state.solvingPair.rank = -3 // todo: change later
+						state.solvingPair.rank = state.settings.startingPoints
 						state.solvingPair.seen = true
 						pairsAdapter.updateOne(state, state.solvingPair)
 					}
@@ -103,7 +125,7 @@ const pairsSlice = createSlice({
 					pairsAdapter.updateOne(state, {
 						id: state.solvingPair.id,
 						changes: {
-							rank: state.solvingPair.rank + 1
+							rank: state.solvingPair.rank + state.settings.gainedPointsOnSuccess
 						}
 					})
 				}
@@ -113,25 +135,30 @@ const pairsSlice = createSlice({
 				pairsAdapter.updateOne(state, {
 					id: state.solvingPair.id,
 					changes: {
-						rank: state.solvingPair.rank - 1
+						rank: state.solvingPair.rank - state.settings.lostPointsOnFail
 					}
 				})
 				state.status = 'wrong'
 			}
+		},
+		updateSettings(state, action) {
+			Object.assign(state.settings, action.payload)
 		}
 	}
 })
 
 export const {
-	fetchPairs,
+	fetchInfo,
+	saveInfo,
 	deletePairs,
 	addPairs,
-	savePairs,
 	editPair,
 	updateEditingPair,
 	deletePair,
 	updateSolvingPair,
-	submitAnswer
+	submitAnswer,
+	updateSettings,
+	deletePracticeInfo
 } = pairsSlice.actions
 
 export default pairsSlice.reducer

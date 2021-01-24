@@ -1,7 +1,7 @@
 import {PracticeCard} from "./PracticeCard";
 import {WrongAnswerDialog} from "./WrongAnswerDialog";
 import {useDispatch, useSelector} from "react-redux";
-import {fetchPairs} from "../pairs/pairsSlice";
+import {fetchInfo} from "../pairs/pairsSlice";
 import {useEffect} from "react";
 
 export const Practice = () => {
@@ -10,7 +10,7 @@ export const Practice = () => {
 	const loadStatus = useSelector(state => state.pairs.loadStatus)
 	useEffect(() => {
 		if (loadStatus === 'unloaded') {
-			dispatch(fetchPairs())
+			dispatch(fetchInfo())
 		}
 	}, [loadStatus, dispatch])
 

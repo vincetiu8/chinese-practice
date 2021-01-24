@@ -1,7 +1,7 @@
 import {Button, Card, CardActions} from "@material-ui/core";
 import {makeStyles} from "@material-ui/core/styles";
 import {useDispatch} from "react-redux";
-import {deletePairs} from "./pairsSlice";
+import {deletePracticeInfo} from "../pairs/pairsSlice";
 
 const useStyles = makeStyles({
 	actions: {
@@ -12,12 +12,12 @@ const useStyles = makeStyles({
 	}
 });
 
-export const DeletePairsForm = () => {
+export const DeletePracticeInfoCard = () => {
 	const classes = useStyles()
 
 	const dispatch = useDispatch()
 
-	const onClick = () => dispatch(deletePairs())
+	const onClick = () => dispatch(deletePracticeInfo())
 
 	return (
 		<div>
@@ -28,7 +28,7 @@ export const DeletePairsForm = () => {
 						classes={{root: classes.button}}
 						onClick={onClick}
 					>
-						Delete All Terms
+						Delete Practice Info
 					</Button>
 				</CardActions>
 			</Card>

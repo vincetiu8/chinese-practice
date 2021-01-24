@@ -1,7 +1,7 @@
 import {Card, CardActions, Grid, TextField} from "@material-ui/core";
 import {useEffect, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
-import {fetchPairs, selectPairsBySearchTerm} from "./pairsSlice";
+import {fetchInfo, selectPairsBySearchTerm} from "./pairsSlice";
 import {Pair} from "./Pair";
 
 export const PairsList = () => {
@@ -10,7 +10,7 @@ export const PairsList = () => {
 	const loadStatus = useSelector(state => state.pairs.loadStatus)
 	useEffect(() => {
 		if (loadStatus === 'unloaded') {
-			dispatch(fetchPairs())
+			dispatch(fetchInfo())
 		}
 	}, [loadStatus, dispatch])
 

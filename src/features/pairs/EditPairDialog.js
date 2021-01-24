@@ -6,13 +6,12 @@ import {editPair} from "./pairsSlice";
 export const EditPairDialog = () => {
 	const dispatch = useDispatch()
 
-	const pair = useSelector(state => state.pairs.currentPair)
+	const pair = useSelector(state => state.pairs.editingPair)
 	const status = useSelector(state => state.pairs.status)
 	const [open, setOpen] = useState(false)
 
 	const [errorTerm, setErrorTerm] = useState(false)
 	const [errorDefinition, setErrorDefinition] = useState(false)
-	const [oldId, setOldId] = useState('')
 	const [newId, setNewId] = useState('')
 	const [definition, setDefinition] = useState('')
 
@@ -37,13 +36,12 @@ export const EditPairDialog = () => {
 			return
 		}
 
-		dispatch(editPair({oldId, newId, definition}))
+		dispatch(editPair({newId, definition}))
 	}
 
 	useEffect(() => {
 		setOpen(status === 'editing')
 		if (open && pair !== null) {
-			setOldId(pair.id)
 			setNewId(pair.id)
 			setDefinition(pair.definition)
 		}

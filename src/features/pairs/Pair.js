@@ -1,15 +1,12 @@
 import {Card, CardActions, Grid, IconButton, Typography} from "@material-ui/core";
 import {Delete, Edit} from "@material-ui/icons";
 import {useDispatch} from "react-redux";
-import {deletePair, updateCurrentPair} from "./pairsSlice";
+import {deletePair, updateEditingPair} from "./pairsSlice";
 
 export const Pair = ({pair}) => {
 	const dispatch = useDispatch()
 
-	const onEdit = () => dispatch(updateCurrentPair({
-		id: pair.id,
-		status: "editing"
-	}))
+	const onEdit = () => dispatch(updateEditingPair(pair.id))
 
 	const onDelete = () => dispatch(deletePair(pair.id))
 

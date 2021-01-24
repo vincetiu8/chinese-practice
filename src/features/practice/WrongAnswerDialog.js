@@ -9,12 +9,12 @@ import {
 	TextField,
 } from "@material-ui/core";
 import {useDispatch, useSelector} from "react-redux";
-import {submitAnswer} from "./pairsSlice";
+import {submitAnswer} from "../pairs/pairsSlice";
 
 export const WrongAnswerDialog = () => {
 	const dispatch = useDispatch()
 
-	const pair = useSelector(state => state.pairs.currentPair)
+	const pair = useSelector(state => state.pairs.solvingPair)
 	const status = useSelector(state => state.pairs.status)
 	const open = status === 'wrong'
 

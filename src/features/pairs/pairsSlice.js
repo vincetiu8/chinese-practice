@@ -1,13 +1,18 @@
 import {createEntityAdapter, createSelector, createSlice} from "@reduxjs/toolkit";
 
 const pairsAdapter = createEntityAdapter({
-	sortComparer: (a, b) => b.term > a.term
+	sortComparer: (a, b) => {
+		const diff = a.rank - b.rank
+		return Math.min(Math.max(diff, -1), 1)
+	}
 })
 
 const initialState = pairsAdapter.getInitialState({
 	loadStatus: 'unloaded',
-	currentPair: null,
-	status: 'loading',
+	editingPair: null,
+	solvingPair: null,
+	pastSolvingPairs: [],
+	status: 'loading'
 })
 
 const pairsSlice = createSlice({
@@ -18,7 +23,7 @@ const pairsSlice = createSlice({
 			const json = localStorage.getItem('pairs')
 			const storedPairs = JSON.parse(json)
 			pairsAdapter.upsertMany(state, storedPairs)
-			state.loadStatus = 'succeeded'
+			state.loadStatus = 'loaded'
 			state.status = 'idle'
 		},
 		deletePairs(state, action) {
@@ -27,8 +32,31 @@ const pairsSlice = createSlice({
 		deletePair(state, action) {
 			pairsAdapter.removeOne(state, action.payload)
 		},
-		addPairs(state, action) {
-			pairsAdapter.upsertMany(state, action.payload)
+		deletePracticeInfo(state, action) {
+			pairsAdapter.updateMany(state, state.entities.map(pair => {
+				return {
+					...pair,
+					rank: 0,
+					seen: false,
+					lastLearned: Date()
+				}
+			}))
+		},
+		addPairs: {
+			reducer: (state, action) => {
+				pairsAdapter.upsertMany(state, action.payload)
+			},
+			prepare: (rawPairs) => {
+				const pairs = rawPairs.map((pair) => {
+					return {
+						...pair,
+						rank: 0,
+						seen: false,
+						lastLearned: Date()
+					}
+				})
+				return {payload: pairs}
+			}
 		},
 		savePairs(state, action) {
 			const json = JSON.stringify(state.entities)
@@ -36,24 +64,60 @@ const pairsSlice = createSlice({
 			localStorage.setItem('pairs', json)
 		},
 		editPair(state, action) {
-			const {oldId, newId, definition} = action.payload
-			const existingPair = state.entities[oldId]
+			const {newId, definition} = action.payload
+			const existingPair = state.entities[state.editingPair.id]
 			if (existingPair) {
 				existingPair.id = newId
 				existingPair.definition = definition
 			}
-			state.currentPair = null
+			state.editingPair = null
+			state.solvingPair = null
 			state.status = 'idle'
 		},
-		updateCurrentPair(state, action) {
-			const {id, status} = action.payload
-			state.currentPair = state.entities[id]
-			state.status = status
+		updateEditingPair(state, action) {
+			state.editingPair = state.entities[action.payload]
+			state.status = 'editing'
+		},
+		updateSolvingPair(state, action) {
+			if (state.solvingPair !== null) {
+				state.pastSolvingPairs.push(state.solvingPair.id.toString())
+				if (state.pastSolvingPairs.length > Math.min(Object.keys(state.entities).length - 1, 2)) // todo: change later to be configurable
+					state.pastSolvingPairs.shift()
+			}
+			state.status = 'solving'
+			for (let id of state.ids) {
+				if (!state.pastSolvingPairs.includes(id.toString())) {
+					state.solvingPair = state.entities[id]
+					if (!state.solvingPair.seen) {
+						state.solvingPair.rank = -3 // todo: change later
+						state.solvingPair.seen = true
+						pairsAdapter.updateOne(state, state.solvingPair)
+					}
+					return
+				}
+			}
 		},
 		submitAnswer(state, action) {
-			state.status = state.currentPair.definition === action.payload
-				? 'idle'
-				: 'wrong'
+			if (action.payload === state.solvingPair.definition) {
+				if (state.status !== 'wrong') {
+					pairsAdapter.updateOne(state, {
+						id: state.solvingPair.id,
+						changes: {
+							rank: state.solvingPair.rank + 1
+						}
+					})
+				}
+
+				pairsSlice.caseReducers.updateSolvingPair(state, action)
+			} else {
+				pairsAdapter.updateOne(state, {
+					id: state.solvingPair.id,
+					changes: {
+						rank: state.solvingPair.rank - 1
+					}
+				})
+				state.status = 'wrong'
+			}
 		}
 	}
 })
@@ -64,9 +128,10 @@ export const {
 	addPairs,
 	savePairs,
 	editPair,
-	updateCurrentPair,
-	submitAnswer,
-	deletePair
+	updateEditingPair,
+	deletePair,
+	updateSolvingPair,
+	submitAnswer
 } = pairsSlice.actions
 
 export default pairsSlice.reducer

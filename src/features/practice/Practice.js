@@ -1,7 +1,7 @@
 import {PracticeCard} from "./PracticeCard";
 import {WrongAnswerDialog} from "./WrongAnswerDialog";
 import {useDispatch, useSelector} from "react-redux";
-import {fetchPairs} from "./pairsSlice";
+import {fetchPairs} from "../pairs/pairsSlice";
 import {useEffect} from "react";
 
 export const Practice = () => {

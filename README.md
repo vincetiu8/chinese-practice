@@ -1,70 +1,43 @@
-# Getting Started with Create React App
+# Chinese Practice Application
+A small locally-based application that helps memorize chinese terms. Specifically built for the english-chinese
+language pair.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
-## Available Scripts
-
+## Running the program
 In the project directory, you can run:
 
 ### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Runs the app in the development mode.
 
 ### `npm run build`
-
 Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Serve the page with your chosen program (i.e. `serve -s build`)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Using the program
+The front-end works completely fine on its own. You can add, edit and delete terms and use the practice function to
+practice your memorization of the terms in your list!\
+Note: the term-definition pairs are stored in the local browser storage. **If you clear your browser history, all your 
+terms will disappear!**\
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Editing the queueing algorithm variables
+If you want to edit the term queuing algorithm, navigate to the settings page and you can change the different variables
+affecting a term's rank. The queueing algorithm consists of assigning each term a 'rank'. Unseen terms are assigned a 
+rank of 0, which gets updated to a (negative) value when they are first seen. When you correctly match the term to the
+definition, the rank of the term increases by a certain value and when you get a term wrong, the rank will decrease by
+a certain value. The system will spit out terms in order of their rank, with lower-ranked terms appearing first.
+Finally, after a term is seen it will not be seen again for a minimum number of terms. The customizable variables
+include:
+- Lost Points On Fail: the decrease in a term's rank when an incorrect definition is entered
+- Gained Points On Success: the increase in a term's rank when a correct definition is entered
+- Starting Points: the rank a newly seen term will be assigned to
+- Minimum Gap Between Elements: the minimum number of other terms that will be seen before seeing a term again
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Linking with [Google Translate](https://translate.google.com/)
+This project can (optionally) be linked with the [Google Cloud Translation API](https://cloud.google.com/translate)
+To use this service, you will need an 
+[API keyfile](https://cloud.google.com/translate/docs/setup#creating_service_accounts_and_keys). Once you have
+downloaded your json keyfile, store it in an environment variable under `GOOGLE_APPLICATION_CREDENTIALS` either globally
+or in a .env file in the root git directory. This will allow the python flask server to detect your key and use it to
+contact google servers. Once this is done, run the `main.py` file (`python main.py`) to launch the local flask server
+and access the Google Translate services!\
+**Note: make sure the flask server runs on a different port than the front-end!** The flask port can be specified by 
+setting the environment variable `FLASK_PORT`.

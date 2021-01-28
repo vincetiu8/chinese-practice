@@ -33,25 +33,27 @@ export const addPairs = createAsyncThunk(
 				pairsToTranslate.push(pair[0])
 			} else {
 				pairs.push({
-					id: pairs[0],
-					definition: pairs[1],
+					id: pair[0],
+					definition: pair[1],
 					rank: 0,
 					seen: false
 				})
 			}
 		}
 
-		const result = await axios.post('http://127.0.0.1:5000/', {
-			terms: pairsToTranslate
-		})
-
-		for (let i = 0; i < pairsToTranslate.length; i++) {
-			pairs.push({
-				id: pairsToTranslate[i],
-				definition: result.data[i].translatedText.toLowerCase(),
-				rank: 0,
-				seen: false
+		if (pairsToTranslate.length > 0) {
+			const result = await axios.post('http://127.0.0.1:5000/', {
+				terms: pairsToTranslate
 			})
+
+			for (let i = 0; i < pairsToTranslate.length; i++) {
+				pairs.push({
+					id: pairsToTranslate[i],
+					definition: result.data[i].translatedText.toLowerCase(),
+					rank: 0,
+					seen: false
+				})
+			}
 		}
 
 		return pairs

@@ -24,16 +24,16 @@ export const AddPairsForm = () => {
 
 	function onClick() {
 		const rawLines = value.split("\n")
-		const rawPairs = rawLines.map(rawLine =>  rawLine.split(" "))
-		const filteredPairs = rawPairs.filter(pair => pair.length === 2)
-		const newPairs = filteredPairs.map(pair => {
-			return {
-				id: pair[0],
-				definition: pair[1]
-			}
-		})
+		const rawPairs = rawLines.map(rawLine =>
+			rawLine.indexOf(' ') !== -1
+				? [
+					rawLine.substr(0, rawLine.indexOf(' ')),
+					rawLine.substr(rawLine.indexOf(' ') + 1)
+				] : [rawLine]
+		)
+		const filteredPairs = rawPairs.filter(pair => pair.length > 0)
 
-		dispatch(addPairs(newPairs))
+		dispatch(addPairs(filteredPairs))
 		setValue("")
 	}
 

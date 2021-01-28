@@ -1,4 +1,5 @@
-import {createEntityAdapter, createSelector, createSlice} from "@reduxjs/toolkit";
+import {createAsyncThunk, createEntityAdapter, createSelector, createSlice} from "@reduxjs/toolkit";
+import axios from "axios";
 
 const pairsAdapter = createEntityAdapter({
 	sortComparer: (a, b) => {
@@ -20,6 +21,42 @@ const initialState = pairsAdapter.getInitialState({
 		minimumGapBetweenElements: 5,
 	}
 })
+
+export const addPairs = createAsyncThunk(
+	'pairs/addPairs',
+	async rawPairs => {
+		let pairsToTranslate = []
+		let pairs = []
+
+		for (let pair of rawPairs) {
+			if (pair.length === 1) {
+				pairsToTranslate.push(pair[0])
+			} else {
+				pairs.push({
+					id: pairs[0],
+					definition: pairs[1],
+					rank: 0,
+					seen: false
+				})
+			}
+		}
+
+		const result = await axios.post('http://127.0.0.1:5000/', {
+			terms: pairsToTranslate
+		})
+
+		for (let i = 0; i < pairsToTranslate.length; i++) {
+			pairs.push({
+				id: pairsToTranslate[i],
+				definition: result.data[i].translatedText.toLowerCase(),
+				rank: 0,
+				seen: false
+			})
+		}
+
+		return pairs
+	}
+)
 
 const pairsSlice = createSlice({
 	name: 'pairs',
@@ -53,21 +90,6 @@ const pairsSlice = createSlice({
 				return pair
 			})
 			pairsAdapter.updateMany(state, updatedPairs)
-		},
-		addPairs: {
-			reducer: (state, action) => {
-				pairsAdapter.upsertMany(state, action.payload)
-			},
-			prepare: (rawPairs) => {
-				const pairs = rawPairs.map((pair) => {
-					return {
-						...pair,
-						rank: 0,
-						seen: false
-					}
-				})
-				return {payload: pairs}
-			}
 		},
 		saveInfo(state, action) {
 			let json = JSON.stringify(state.entities)
@@ -144,6 +166,20 @@ const pairsSlice = createSlice({
 		updateSettings(state, action) {
 			Object.assign(state.settings, action.payload)
 		}
+	},
+	extraReducers: {
+		[addPairs.pending]: (state, action) => {
+			state.status = "loading"
+		},
+		[addPairs.fulfilled]: (state, action) => {
+			state.status = "idle"
+			pairsAdapter.upsertMany(state, action.payload)
+		},
+		[addPairs.rejected]: (state, action) => {
+			state.status = "failed"
+			console.log(action.error)
+			state.error = action.error
+		}
 	}
 })
 
@@ -151,7 +187,6 @@ export const {
 	fetchInfo,
 	saveInfo,
 	deletePairs,
-	addPairs,
 	editPair,
 	updateEditingPair,
 	deletePair,

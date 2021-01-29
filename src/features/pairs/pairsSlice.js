@@ -32,6 +32,8 @@ export const addPairs = createAsyncThunk(
 		let pairs = []
 
 		for (let pair of rawPairs) {
+			if (pair[0] === "")
+				continue
 			if (pair.length === 1) {
 				pairsToTranslate.push(pair[0])
 			} else {

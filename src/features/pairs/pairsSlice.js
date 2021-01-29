@@ -45,18 +45,20 @@ export const addPairs = createAsyncThunk(
 		}
 
 		if (pairsToTranslate.length > 0) {
-			const result = await axios.post('http://127.0.0.1:5000/', { // port hardcoded to avoid confusion
-				terms: pairsToTranslate
-			})
-
-			for (let i = 0; i < pairsToTranslate.length; i++) {
-				pairs.push({
-					id: pairsToTranslate[i],
-					definition: result.data[i].translatedText.toLowerCase(),
-					rank: 0,
-					seen: false,
-					flip: false
+			for (let i = 0; i < pairsToTranslate.length; i += 128) { // separated into 128 term chunks
+				const result = await axios.post('http://127.0.0.1:5000/', { // port hardcoded to avoid confusion
+					terms: pairsToTranslate.slice(i, Math.min(i + 128, pairsToTranslate.length))
 				})
+
+				for (let j = 0; j < result.data.length; j++) {
+					pairs.push({
+						id: pairsToTranslate[i + j],
+						definition: result.data[j].translatedText.toLowerCase(),
+						rank: 0,
+						seen: false,
+						flip: false
+					})
+				}
 			}
 		}
 

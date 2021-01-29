@@ -14,6 +14,8 @@ import {submitAnswer} from "../pairs/pairsSlice";
 export const WrongAnswerDialog = () => {
 	const dispatch = useDispatch()
 
+
+	// todo: add option to edit term
 	const pair = useSelector(state => state.pairs.solvingPair)
 	const status = useSelector(state => state.pairs.status)
 	const open = status === 'wrong'

@@ -4,7 +4,8 @@ import axios from "axios";
 const pairsAdapter = createEntityAdapter({
 	sortComparer: (a, b) => {
 		const diff = a.rank - b.rank
-		return Math.min(Math.max(diff, -1), 1)
+		const fixedDiff = Math.min(Math.max(diff, -1), 1)
+		return (fixedDiff !== 0 || a.rank !== 0) ? fixedDiff : a.nonce - b.nonce
 	}
 })
 
@@ -39,7 +40,8 @@ export const addPairs = createAsyncThunk(
 					definition: pair[1],
 					rank: 0,
 					seen: false,
-					flip: false
+					flip: false,
+					nonce: Math.random() - 0.5
 				})
 			}
 		}
@@ -56,7 +58,8 @@ export const addPairs = createAsyncThunk(
 						definition: result.data[j].translatedText.toLowerCase(),
 						rank: 0,
 						seen: false,
-						flip: false
+						flip: false,
+						nonce: Math.random() - 0.5
 					})
 				}
 			}
@@ -96,6 +99,7 @@ const pairsSlice = createSlice({
 				pair.rank = 0
 				pair.seen = false
 				pair.flip = false
+				pair.nonce = Math.random() - 0.5
 				return pair
 			})
 			pairsAdapter.updateMany(state, updatedPairs)
@@ -116,7 +120,8 @@ const pairsSlice = createSlice({
 					definition: definition,
 					rank: 0,
 					seen: false,
-					flip: false
+					flip: false,
+					nonce: Math.random() - 0.5
 				})
 			}
 			state.editingPair = null

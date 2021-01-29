@@ -42,7 +42,7 @@ export const addPairs = createAsyncThunk(
 		}
 
 		if (pairsToTranslate.length > 0) {
-			const result = await axios.post('http://127.0.0.1:5000/', {
+			const result = await axios.post('http://127.0.0.1:5000/', { // port hardcoded to avoid confusion
 				terms: pairsToTranslate
 			})
 
@@ -120,6 +120,7 @@ const pairsSlice = createSlice({
 			state.status = 'editing'
 		},
 		updateSolvingPair(state, action) {
+			// todo: alternate between terms and definitions
 			if (state.solvingPair !== null) {
 				state.pastSolvingPairs.push(state.solvingPair.id.toString())
 				if (state.pastSolvingPairs.length >

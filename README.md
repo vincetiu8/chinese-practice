@@ -39,5 +39,5 @@ downloaded your json keyfile, store it in an environment variable under `GOOGLE_
 or in a .env file in the root git directory. This will allow the python flask server to detect your key and use it to
 contact google servers. Once this is done, run the `main.py` file (`python main.py`) to launch the local flask server
 and access the Google Translate services!\
-**Note: make sure the flask server runs on a different port than the front-end!** The flask port can be specified by 
-setting the environment variable `FLASK_PORT`.
+**Note: make sure the flask server runs on a different port than the front-end!** The flask port is hard-coded to 5000, 
+so make sure nothing else is using this port!

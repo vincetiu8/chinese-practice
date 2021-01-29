@@ -4,7 +4,7 @@ import {Add, Remove} from "@material-ui/icons";
 import {updateSettings} from "../pairs/pairsSlice";
 import {useEffect, useState} from "react";
 
-export const SettingsCard = ({setting}) => {
+export const SettingsCardNumber = ({setting}) => {
 	const dispatch = useDispatch()
 
 	const settingValue = useSelector(state => state.pairs.settings[setting])

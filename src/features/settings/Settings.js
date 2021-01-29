@@ -1,9 +1,10 @@
 import {useDispatch, useSelector} from "react-redux";
 import {Grid} from "@material-ui/core";
-import {SettingsCard} from "./SettingsCard";
+import {SettingsCardNumber} from "./SettingsCardNumber";
 import {useEffect} from "react";
 import {fetchInfo, saveInfo} from "../pairs/pairsSlice";
 import {DeletePracticeInfoCard} from "./DeletePracticeInfoCard"
+import {SettingsCardBool} from "./SettingsCardBool";
 
 export const Settings = () => {
 	const dispatch = useDispatch()
@@ -33,7 +34,10 @@ export const Settings = () => {
 						{
 							Object.keys(settings).map(setting => (
 								<Grid item key={setting}>
-									<SettingsCard setting={setting}/>
+									{typeof settings[setting] === "boolean"
+										? <SettingsCardBool setting={setting}/>
+										: <SettingsCardNumber setting={setting}/>
+									}
 								</Grid>
 							))
 						}

@@ -45,7 +45,11 @@ export const PracticeCard = () => {
 					<Typography variant="h3">
 						{pairIds.length > 0
 							? (
-								solvingPair !== null ? solvingPair.id : ''
+								solvingPair !== null
+									? solvingPair.flip
+										? solvingPair.definition
+										: solvingPair.id
+									: ''
 							)
 							: (
 								'No terms found, add some first!'

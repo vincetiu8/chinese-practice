@@ -19,6 +19,8 @@ const initialState = pairsAdapter.getInitialState({
 		gainedPointsOnSuccess: 1,
 		startingPoints: -3,
 		minimumGapBetweenElements: 5,
+		flipTerms: true,
+		askTerm: false,
 	}
 })
 
@@ -36,7 +38,8 @@ export const addPairs = createAsyncThunk(
 					id: pair[0],
 					definition: pair[1],
 					rank: 0,
-					seen: false
+					seen: false,
+					flip: false
 				})
 			}
 		}
@@ -51,7 +54,8 @@ export const addPairs = createAsyncThunk(
 					id: pairsToTranslate[i],
 					definition: result.data[i].translatedText.toLowerCase(),
 					rank: 0,
-					seen: false
+					seen: false,
+					flip: false
 				})
 			}
 		}
@@ -89,6 +93,7 @@ const pairsSlice = createSlice({
 				const pair = state.entities[id]
 				pair.rank = 0
 				pair.seen = false
+				pair.flip = false
 				return pair
 			})
 			pairsAdapter.updateMany(state, updatedPairs)
@@ -109,6 +114,7 @@ const pairsSlice = createSlice({
 					definition: definition,
 					rank: 0,
 					seen: false,
+					flip: false
 				})
 			}
 			state.editingPair = null
@@ -120,7 +126,6 @@ const pairsSlice = createSlice({
 			state.status = 'editing'
 		},
 		updateSolvingPair(state, action) {
-			// todo: alternate between terms and definitions
 			if (state.solvingPair !== null) {
 				state.pastSolvingPairs.push(state.solvingPair.id.toString())
 				if (state.pastSolvingPairs.length >
@@ -145,12 +150,13 @@ const pairsSlice = createSlice({
 			}
 		},
 		submitAnswer(state, action) {
-			if (action.payload === state.solvingPair.definition) {
+			if (action.payload === (state.solvingPair.flip ? state.solvingPair.id : state.solvingPair.definition)) {
 				if (state.status !== 'wrong') {
 					pairsAdapter.updateOne(state, {
 						id: state.solvingPair.id,
 						changes: {
-							rank: state.solvingPair.rank + state.settings.gainedPointsOnSuccess
+							rank: state.solvingPair.rank + state.settings.gainedPointsOnSuccess,
+							flip: state.settings.flipTerms ? !state.solvingPair.flip : state.settings.askDefinition
 						}
 					})
 				}

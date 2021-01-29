@@ -16,7 +16,7 @@ Serve the page with your chosen program (i.e. `serve -s build`)
 The front-end works completely fine on its own. You can add, edit and delete terms and use the practice function to
 practice your memorization of the terms in your list!\
 Note: the term-definition pairs are stored in the local browser storage. **If you clear your browser history, all your 
-terms will disappear!**\
+terms will disappear!**
 
 ### Editing the queueing algorithm variables
 If you want to edit the term queuing algorithm, navigate to the settings page and you can change the different variables
@@ -30,6 +30,10 @@ include:
 - Gained Points On Success: the increase in a term's rank when a correct definition is entered
 - Starting Points: the rank a newly seen term will be assigned to
 - Minimum Gap Between Elements: the minimum number of other terms that will be seen before seeing a term again
+
+In addition to these variables, there are two more options regarding which way the pairs are quizzed:
+- Flip Terms: if the term and definition are flipped after successfully entering an answer
+- Ask Term: if the answer should be the term instead of the definition. Has no effect if Flip Pairs is true
 
 ## Linking with [Google Translate](https://translate.google.com/)
 This project can (optionally) be linked with the [Google Cloud Translation API](https://cloud.google.com/translate)

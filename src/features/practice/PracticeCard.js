@@ -5,6 +5,8 @@ import {selectPairIds, submitAnswer, updateSolvingPair} from "../pairs/pairsSlic
 import {makeStyles} from "@material-ui/core/styles";
 import {Link} from "react-router-dom";
 
+const synth = window.speechSynthesis
+
 const useStyles = makeStyles({
 	actions: {
 		justifyContent: 'center'
@@ -26,6 +28,14 @@ export const PracticeCard = () => {
 			dispatch(updateSolvingPair())
 		}
 	}, [status, dispatch, pairIds.length])
+
+	useEffect(() => {
+		if (solvingPair !== null) {
+			let speakText = new SpeechSynthesisUtterance(solvingPair.flip ? solvingPair.definition : solvingPair.id)
+			speakText.lang = solvingPair.flip ? 'en' : 'zh'
+			synth.speak(speakText)
+		}
+	}, [solvingPair])
 
 	const [answer, setAnswer] = useState("")
 

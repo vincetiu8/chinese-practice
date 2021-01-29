@@ -150,7 +150,9 @@ const pairsSlice = createSlice({
 			}
 		},
 		submitAnswer(state, action) {
-			if (action.payload === (state.solvingPair.flip ? state.solvingPair.id : state.solvingPair.definition)) {
+			if (action.payload.toLowerCase() === (state.solvingPair.flip
+				? state.solvingPair.id.toLowerCase()
+				: state.solvingPair.definition.toLowerCase())) {
 				if (state.status !== 'wrong') {
 					pairsAdapter.updateOne(state, {
 						id: state.solvingPair.id,

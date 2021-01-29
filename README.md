@@ -26,14 +26,14 @@ definition, the rank of the term increases by a certain value and when you get a
 a certain value. The system will spit out terms in order of their rank, with lower-ranked terms appearing first.
 Finally, after a term is seen it will not be seen again for a minimum number of terms. The customizable variables
 include:
-- Lost Points On Fail: the decrease in a term's rank when an incorrect definition is entered
-- Gained Points On Success: the increase in a term's rank when a correct definition is entered
-- Starting Points: the rank a newly seen term will be assigned to
-- Minimum Gap Between Elements: the minimum number of other terms that will be seen before seeing a term again
+- `Lost Points On Fail`: the decrease in a term's rank when an incorrect definition is entered
+- `Gained Points On Success`: the increase in a term's rank when a correct definition is entered
+- `Starting Points`: the rank a newly seen term will be assigned to
+- `Minimum Gap Between Elements`: the minimum number of other terms that will be seen before seeing a term again
 
 In addition to these variables, there are two more options regarding which way the pairs are quizzed:
-- Flip Terms: if the term and definition are flipped after successfully entering an answer
-- Ask Term: if the answer should be the term instead of the definition. Has no effect if Flip Pairs is true
+- `Flip Terms`: if the term and definition are flipped after successfully entering an answer
+- `Ask Term`: if the answer (to the first term if `Flip Terms` is true) should be the term instead of the definition
 
 ## Linking with [Google Translate](https://translate.google.com/)
 This project can (optionally) be linked with the [Google Cloud Translation API](https://cloud.google.com/translate)

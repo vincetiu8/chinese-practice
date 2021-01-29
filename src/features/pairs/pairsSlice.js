@@ -37,11 +37,7 @@ export const addPairs = createAsyncThunk(
 			} else {
 				pairs.push({
 					id: pair[0],
-					definition: pair[1],
-					rank: 0,
-					seen: false,
-					flip: false,
-					nonce: Math.random() - 0.5
+					definition: pair[1]
 				})
 			}
 		}
@@ -55,11 +51,7 @@ export const addPairs = createAsyncThunk(
 				for (let j = 0; j < result.data.length; j++) {
 					pairs.push({
 						id: pairsToTranslate[i + j],
-						definition: result.data[j].translatedText.toLowerCase(),
-						rank: 0,
-						seen: false,
-						flip: false,
-						nonce: Math.random() - 0.5
+						definition: result.data[j].translatedText.toLowerCase()
 					})
 				}
 			}
@@ -99,11 +91,12 @@ const pairsSlice = createSlice({
 				const pair = state.entities[id]
 				pair.rank = 0
 				pair.seen = false
-				pair.flip = false
+				pair.flip = state.settings.askTerm
 				pair.nonce = Math.random() - 0.5
 				return pair
 			})
 			pairsAdapter.updateMany(state, updatedPairs)
+			pairsSlice.caseReducers.updateSolvingPair(state, action)
 		},
 		saveInfo(state, action) {
 			let json = JSON.stringify(state.entities)
@@ -121,7 +114,7 @@ const pairsSlice = createSlice({
 					definition: definition,
 					rank: 0,
 					seen: false,
-					flip: false,
+					flip: state.settings.askTerm,
 					nonce: Math.random() - 0.5
 				})
 			}
@@ -166,7 +159,7 @@ const pairsSlice = createSlice({
 						id: state.solvingPair.id,
 						changes: {
 							rank: state.solvingPair.rank + state.settings.gainedPointsOnSuccess,
-							flip: state.settings.flipTerms ? !state.solvingPair.flip : state.settings.askDefinition
+							flip: state.settings.flipTerms ? !state.solvingPair.flip : state.settings.askTerm
 						}
 					})
 				}
@@ -192,11 +185,19 @@ const pairsSlice = createSlice({
 		},
 		[addPairs.fulfilled]: (state, action) => {
 			state.status = "idle"
-			pairsAdapter.upsertMany(state, action.payload)
+			const pairs = action.payload.map(pair => {
+				return {
+					...pair,
+					rank: 0,
+					seen: false,
+					flip: state.settings.askTerm,
+					nonce: Math.random() - 0.5
+				}
+			})
+			pairsAdapter.upsertMany(state, pairs)
 		},
 		[addPairs.rejected]: (state, action) => {
 			state.status = "failed"
-			console.log(action.error)
 			state.error = action.error
 		}
 	}

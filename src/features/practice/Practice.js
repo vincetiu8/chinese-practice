@@ -3,6 +3,7 @@ import {WrongAnswerDialog} from "./WrongAnswerDialog";
 import {useDispatch, useSelector} from "react-redux";
 import {fetchInfo} from "../pairs/pairsSlice";
 import {useEffect} from "react";
+import {EditPairDialog} from "../pairs/EditPairDialog";
 
 export const Practice = () => {
 	const dispatch = useDispatch()
@@ -17,6 +18,7 @@ export const Practice = () => {
 	return (
 		<div>
 			<PracticeCard/>
+			<EditPairDialog/>
 			<WrongAnswerDialog/>
 		</div>
 	)

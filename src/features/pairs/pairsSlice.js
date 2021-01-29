@@ -92,6 +92,7 @@ const pairsSlice = createSlice({
 		},
 		deletePair(state, action) {
 			pairsAdapter.removeOne(state, action.payload)
+			state.status = 'idle'
 		},
 		deletePracticeInfo(state, action) {
 			const updatedPairs = Object.values(state.ids).map(id => {

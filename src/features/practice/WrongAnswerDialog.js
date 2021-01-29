@@ -5,17 +5,16 @@ import {
 	DialogActions,
 	DialogContent,
 	DialogContentText,
-	DialogTitle,
+	DialogTitle, IconButton,
 	TextField,
 } from "@material-ui/core";
 import {useDispatch, useSelector} from "react-redux";
-import {submitAnswer} from "../pairs/pairsSlice";
+import {submitAnswer, updateEditingPair, deletePair} from "../pairs/pairsSlice";
+import {Delete, Edit} from "@material-ui/icons";
 
 export const WrongAnswerDialog = () => {
 	const dispatch = useDispatch()
 
-
-	// todo: add option to edit term
 	const pair = useSelector(state => state.pairs.solvingPair)
 	const status = useSelector(state => state.pairs.status)
 	const open = status === 'wrong'
@@ -24,6 +23,9 @@ export const WrongAnswerDialog = () => {
 	const [showAnswer, setShowAnswer] = useState(false)
 
 	const onChange = e => setAnswer(e.target.value)
+
+	const onEdit = () => dispatch(updateEditingPair(pair.id))
+	const onDelete = () => dispatch(deletePair(pair.id))
 
 	const onKeyPress = e => {
 		if (e.key === "Enter") {
@@ -66,16 +68,19 @@ export const WrongAnswerDialog = () => {
 							</DialogContentText>
 					}
 				</DialogContent>
-				{
-					showAnswer
-						? ""
-						:
-						<DialogActions>
-							<Button autoFocus onClick={() => setShowAnswer(true)}>
-								Next
-							</Button>
-						</DialogActions>
-				}
+				<DialogActions>
+					<IconButton onClick={onEdit}>
+						<Edit/>
+					</IconButton>
+					<IconButton onClick={onDelete}>
+						<Delete/>
+					</IconButton>
+					{
+						showAnswer
+							? ""
+							: <Button autoFocus onClick={() => setShowAnswer(true)}>Next</Button>
+					}
+				</DialogActions>
 			</Dialog>
 		</div>
 	);

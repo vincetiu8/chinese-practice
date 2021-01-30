@@ -27,6 +27,27 @@ const initialState = pairsAdapter.getInitialState({
 		totalTerms: 0,
 		seenTerms: 0,
 		learnedTerms: 0,
+		history: {},
+
+	},
+	currentDate: null,
+	historyStats: {
+		currentSession: {
+			seenTerms: 0,
+			learnedTerms: 0,
+		},
+		today: {
+			seenTerms: 0,
+			learnedTerms: 0
+		},
+		week: {
+			seenTerms: 0,
+			learnedTerms: 0
+		},
+		month: {
+			seenTerms: 0,
+			learnedTerms: 0
+		}
 	}
 })
 
@@ -51,7 +72,7 @@ export const addPairs = createAsyncThunk(
 
 		if (pairsToTranslate.length > 0) {
 			for (let i = 0; i < pairsToTranslate.length; i += 128) { // separated into 128 term chunks
-				const result = await axios.post('http://127.0.0.1:5000/', { // port hardcoded to avoid confusion
+				const result = await axios.post('http://127.0.0.1:5000/', { // hardcoded to avoid confusion
 					terms: pairsToTranslate.slice(i, Math.min(i + 128, pairsToTranslate.length))
 				})
 
@@ -79,6 +100,12 @@ const pairsSlice = createSlice({
 				pairsAdapter.upsertMany(state, storedPairs)
 			}
 
+			json = localStorage.getItem('chinese-practice/history')
+			let history = {}
+			if (json !== null) {
+				history = JSON.parse(json)
+			}
+
 			let seenTerms = 0, learnedTerms = 0 // recalculate stats on reload
 			for (let id of state.ids) {
 				const term = state.entities[id]
@@ -92,13 +119,46 @@ const pairsSlice = createSlice({
 			state.stats = {
 				totalTerms: state.ids.length,
 				seenTerms: seenTerms,
-				learnedTerms: learnedTerms
+				learnedTerms: learnedTerms,
+				history: history
 			}
 
 			json = localStorage.getItem('chinese-practice/settings')
 			if (json !== null) {
 				state.settings = JSON.parse(json)
 			}
+
+			const now = new Date()
+			const exactDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+			state.currentDate = exactDate.getTime()
+			if (state.currentDate in state.stats.history) {
+				state.historyStats.today = state.stats.history[state.currentDate]
+			}
+
+			const currentMonth = new Date(state.currentDate - 2592000) // unix value of 1 month
+			const currentWeek = new Date(state.currentDate - 604800) // unix value of 1 week
+			const monthHistory = Object.keys(state.stats.history).filter(key => key > currentMonth)
+			if (monthHistory.length > 0) {
+				let seenTermsMonth = 0, learnedTermsMonth = 0, seenTermsWeek = 0, learnedTermsWeek = 0
+				for (const day of monthHistory) {
+					const dayData = state.stats.history[day]
+					seenTermsMonth += dayData.seenTerms
+					learnedTermsMonth += dayData.learnedTerms
+					if (day > currentWeek) {
+						seenTermsWeek += dayData.seenTerms
+						learnedTermsWeek += dayData.learnedTerms
+					}
+				}
+				state.historyStats.month = {
+					seenTerms: seenTermsMonth,
+					learnedTerms: learnedTermsMonth
+				}
+				state.historyStats.week = {
+					seenTerms: seenTermsWeek,
+					learnedTerms: learnedTermsWeek
+				}
+			}
+
 			state.loadStatus = 'loaded'
 			state.status = 'idle'
 		},
@@ -133,6 +193,24 @@ const pairsSlice = createSlice({
 				seenTerms: 0,
 				learnedTerms: 0
 			}
+			state.historyStats = {
+				currentSession: {
+					seenTerms: 0,
+					learnedTerms: 0,
+				},
+				today: {
+					seenTerms: 0,
+					learnedTerms: 0
+				},
+				week: {
+					seenTerms: 0,
+					learnedTerms: 0
+				},
+				month: {
+					seenTerms: 0,
+					learnedTerms: 0
+				}
+			}
 			pairsAdapter.updateMany(state, updatedPairs)
 			pairsSlice.caseReducers.updateSolvingPair(state, action)
 		},
@@ -141,8 +219,15 @@ const pairsSlice = createSlice({
 			localStorage.setItem('chinese-practice/pairs', json)
 			json = JSON.stringify(state.settings)
 			localStorage.setItem('chinese-practice/settings', json)
-			json = JSON.stringify(state.stats)
-			localStorage.setItem('chinese-practice/stats', json)
+			let seenTerms = state.historyStats.today.seenTerms,
+				learnedTerms = state.historyStats.today.learnedTerms
+			state.stats.history[state.currentDate] = {
+				seenTerms: seenTerms,
+				learnedTerms: learnedTerms,
+			}
+
+			json = JSON.stringify(state.stats.history)
+			localStorage.setItem('chinese-practice/history', json)
 		},
 		editPair(state, action) {
 			const {newId, definition} = action.payload
@@ -188,6 +273,25 @@ const pairsSlice = createSlice({
 							...state.stats,
 							seenTerms: state.stats.seenTerms + 1
 						}
+						state.historyStats = {
+							...state.historyStats,
+							currentSession: {
+								...state.historyStats.currentSession,
+								seenTerms: state.historyStats.currentSession.seenTerms + 1
+							},
+							today: {
+								...state.historyStats.today,
+								seenTerms: state.historyStats.today.seenTerms + 1
+							},
+							week: {
+								...state.historyStats.week,
+								seenTerms: state.historyStats.week.seenTerms + 1
+							},
+							month: {
+								...state.historyStats.month,
+								seenTerms: state.historyStats.week.seenTerms + 1
+							}
+						}
 						pairsAdapter.updateOne(state, state.solvingPair)
 					}
 					return
@@ -212,6 +316,25 @@ const pairsSlice = createSlice({
 							...state.stats,
 							learnedTerms: state.stats.learnedTerms + 1
 						}
+						state.historyStats = {
+							...state.historyStats,
+							currentSession: {
+								...state.historyStats.currentSession,
+								learnedTerms: state.historyStats.currentSession.learnedTerms + 1
+							},
+							today: {
+								...state.historyStats.today,
+								learnedTerms: state.historyStats.today.learnedTerms + 1
+							},
+							week: {
+								...state.historyStats.week,
+								learnedTerms: state.historyStats.week.learnedTerms + 1
+							},
+							month: {
+								...state.historyStats.month,
+								learnedTerms: state.historyStats.week.learnedTerms + 1
+							}
+						}
 					}
 				}
 
@@ -228,6 +351,24 @@ const pairsSlice = createSlice({
 					state.stats = {
 						...state.stats,
 						learnedTerms: state.stats.learnedTerms - 1
+					}
+					state.historyStats = {
+						currentSession: {
+							...state.historyStats.currentSession,
+							learnedTerms: state.historyStats.currentSession.learnedTerms - 1
+						},
+						today: {
+							...state.historyStats.today,
+							learnedTerms: state.historyStats.today.learnedTerms - 1
+						},
+						week: {
+							...state.historyStats.week,
+							learnedTerms: state.historyStats.week.learnedTerms - 1
+						},
+						month: {
+							...state.historyStats.month,
+							learnedTerms: state.historyStats.week.learnedTerms - 1
+						}
 					}
 				}
 				state.status = 'wrong'

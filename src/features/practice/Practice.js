@@ -1,12 +1,11 @@
 import {PracticeCard} from "./PracticeCard";
 import {WrongAnswerDialog} from "./WrongAnswerDialog";
-import {useDispatch, useSelector} from "react-redux";
-import {fetchInfo} from "../pairs/pairsSlice";
-import {useEffect} from "react";
+import {useSelector} from "react-redux";
 import {EditPairDialog} from "../pairs/EditPairDialog";
-import {InfoCard} from "./InfoCard";
+import {StatCard} from "./StatCard";
 import {Grid} from "@material-ui/core";
 import {makeStyles} from "@material-ui/core/styles";
+import {HistoryStatCard} from "./HistoryStatCard";
 
 const useStyles = makeStyles({
 	container: {
@@ -16,16 +15,9 @@ const useStyles = makeStyles({
 
 export const Practice = () => {
 	const classes = useStyles()
-	const dispatch = useDispatch()
 
-	const loadStatus = useSelector(state => state.pairs.loadStatus)
 	const stats = useSelector(state => state.pairs.stats)
-
-	useEffect(() => {
-		if (loadStatus === 'unloaded') {
-			dispatch(fetchInfo())
-		}
-	}, [loadStatus, dispatch])
+	const historyStats = useSelector(state => state.pairs.historyStats)
 
 	return (
 		<div>
@@ -46,9 +38,24 @@ export const Practice = () => {
 					<Grid container justify="center" spacing={3}>
 						{
 							Object.keys(stats).map(stat => (
-								<Grid item key={stat}>
-									<InfoCard stat={stat}/>
-								</Grid>
+								stat === "history" || stat === "historyStats"
+									? ""
+									: (
+										<Grid item key={stat}>
+											<StatCard stat={stat}/>
+										</Grid>
+									)
+							))
+						}
+					</Grid>
+					<Grid container justify="center" spacing={3} className={classes.container}>
+						{
+							Object.keys(historyStats).map(historyRange => (
+								Object.keys(historyStats[historyRange]).map(stat => (
+									<Grid item key={stat}>
+										<HistoryStatCard historyRange={historyRange} stat={stat}/>
+									</Grid>
+								))
 							))
 						}
 					</Grid>

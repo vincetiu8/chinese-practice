@@ -1,8 +1,6 @@
-import {useDispatch, useSelector} from "react-redux";
+import {useSelector} from "react-redux";
 import {Grid} from "@material-ui/core";
 import {SettingsCardNumber} from "./SettingsCardNumber";
-import {useEffect} from "react";
-import {fetchInfo, saveInfo} from "../pairs/pairsSlice";
 import {DeletePracticeInfoCard} from "./DeletePracticeInfoCard"
 import {SettingsCardBool} from "./SettingsCardBool";
 import {makeStyles} from "@material-ui/core/styles";
@@ -15,23 +13,6 @@ const useStyles = makeStyles({
 
 export const Settings = () => { // todo: add mode to practice only seen terms or only learned terms
 	const classes = useStyles()
-	const dispatch = useDispatch()
-
-	useEffect(() => {
-		const onUnload = () => dispatch(saveInfo())
-		window.addEventListener('beforeunload', onUnload)
-		return () => {
-			window.removeEventListener('beforeunload', onUnload)
-			onUnload()
-		}
-	}, [dispatch])
-
-	const loadStatus = useSelector(state => state.pairs.loadStatus)
-	useEffect(() => {
-		if (loadStatus === 'unloaded') {
-			dispatch(fetchInfo())
-		}
-	}, [loadStatus, dispatch])
 
 	const settings = useSelector(state => state.pairs.settings)
 	return (

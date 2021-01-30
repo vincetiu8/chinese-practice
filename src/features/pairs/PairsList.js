@@ -1,19 +1,10 @@
 import {Card, CardActions, Grid, TextField} from "@material-ui/core";
-import {useEffect, useState} from "react";
-import {useDispatch, useSelector} from "react-redux";
-import {fetchInfo, selectPairsBySearchTerm} from "./pairsSlice";
+import {useState} from "react";
+import {useSelector} from "react-redux";
+import {selectPairsBySearchTerm} from "./pairsSlice";
 import {Pair} from "./Pair";
 
 export const PairsList = () => { // todo: add option to download pairs as json or txt
-	const dispatch = useDispatch()
-
-	const loadStatus = useSelector(state => state.pairs.loadStatus)
-	useEffect(() => {
-		if (loadStatus === 'unloaded') {
-			dispatch(fetchInfo())
-		}
-	}, [loadStatus, dispatch])
-
 	const [searchTerm, setSearchTerm] = useState("")
 
 	const onChange = (e) => setSearchTerm(e.target.value)

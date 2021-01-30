@@ -4,7 +4,7 @@ import {useDispatch, useSelector} from "react-redux";
 import {fetchInfo, selectPairsBySearchTerm} from "./pairsSlice";
 import {Pair} from "./Pair";
 
-export const PairsList = () => {
+export const PairsList = () => { // todo: add option to download pairs as json or txt
 	const dispatch = useDispatch()
 
 	const loadStatus = useSelector(state => state.pairs.loadStatus)

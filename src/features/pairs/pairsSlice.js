@@ -277,7 +277,7 @@ export const {
 export default pairsSlice.reducer
 
 export const {
-	selectAll: selectAllPairs,
+	selectAll: selectAllPairs, // todo: limit number of pairs returned
 	selectById: selectPairById,
 	selectIds: selectPairIds
 } = pairsAdapter.getSelectors(state => state.pairs)

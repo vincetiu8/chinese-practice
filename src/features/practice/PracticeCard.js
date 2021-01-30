@@ -4,6 +4,8 @@ import {useDispatch, useSelector} from "react-redux";
 import {selectPairIds, submitAnswer, updateSolvingPair} from "../pairs/pairsSlice";
 import {makeStyles} from "@material-ui/core/styles";
 import {Link} from "react-router-dom";
+import UIFx from "uifx";
+import correctAudio from "./correct.mp3"
 
 const synth = window.speechSynthesis
 
@@ -13,6 +15,8 @@ const useStyles = makeStyles({
 	}
 })
 
+const correct = new UIFx(correctAudio)
+
 export const PracticeCard = () => {
 	const classes = useStyles()
 
@@ -20,8 +24,8 @@ export const PracticeCard = () => {
 
 	const pairIds = useSelector(selectPairIds)
 	const solvingPair = useSelector(state => state.pairs.solvingPair)
-
 	const status = useSelector(state => state.pairs.status)
+	const [loaded, setLoaded] = useState(false)
 
 	useEffect(() => {
 		if (pairIds.length > 0 && status === 'idle') {
@@ -31,6 +35,11 @@ export const PracticeCard = () => {
 
 	useEffect(() => {
 		if (solvingPair !== null) {
+			if (loaded) {
+				correct.play()
+			} else {
+				setLoaded(true)
+			}
 			let speakText = new SpeechSynthesisUtterance(solvingPair.flip ? solvingPair.definition : solvingPair.id)
 			speakText.lang = solvingPair.flip ? 'en' : 'zh'
 			synth.speak(speakText)

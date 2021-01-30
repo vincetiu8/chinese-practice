@@ -13,7 +13,7 @@ const useStyles = makeStyles({
 	}
 })
 
-export const Settings = () => {
+export const Settings = () => { // todo: add mode to practice only seen terms or only learned terms
 	const classes = useStyles()
 	const dispatch = useDispatch()
 

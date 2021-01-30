@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {
 	Button,
 	Dialog,
@@ -11,6 +11,12 @@ import {
 import {useDispatch, useSelector} from "react-redux";
 import {submitAnswer, updateEditingPair, deletePair} from "../pairs/pairsSlice";
 import {Delete, Edit} from "@material-ui/icons";
+import pinyin from "chinese-to-pinyin"
+import UIFx from "uifx";
+import wrongAudio from "./wrong.mp3"
+
+const wrong = new UIFx(wrongAudio)
+const synth = window.speechSynthesis
 
 export const WrongAnswerDialog = () => {
 	const dispatch = useDispatch()
@@ -35,6 +41,23 @@ export const WrongAnswerDialog = () => {
 		}
 	}
 
+	useEffect(() => {
+		if (open) {
+
+		}
+	}, [open])
+
+	useEffect(() => {
+		if (open && !showAnswer) {
+			let speakText = new SpeechSynthesisUtterance(pair.flip ? pair.definition : pair.id)
+			speakText.lang = pair.flip ? 'en' : 'zh'
+			synth.speak(speakText)
+			speakText = new SpeechSynthesisUtterance(pair.flip ? pair.id : pair.definition)
+			speakText.lang = pair.flip ? 'zh' : 'en'
+			synth.speak(speakText)
+		}
+	}, [open, showAnswer, pair])
+
 	return (
 		<div>
 			<Dialog open={open}>
@@ -47,7 +70,15 @@ export const WrongAnswerDialog = () => {
 				</DialogTitle>
 				<DialogContent>
 					<DialogContentText variant="h3" color="textPrimary">
-						Term: {open ? pair.id : ''}
+						Term: {
+						open
+							? pair.flip
+								? pair.definition
+								: showAnswer
+									? pair.id
+									: pair.id + ' (' + pinyin(pair.id) + ")"
+							: ''
+					}
 					</DialogContentText>
 					{
 						showAnswer
@@ -64,7 +95,13 @@ export const WrongAnswerDialog = () => {
 							/>
 							:
 							<DialogContentText variant="h3">
-								Correct Answer: {open ? pair.definition : ''}
+								Correct Answer: {
+								open
+									? pair.flip
+										? pair.id + ' (' + pinyin(pair.id) + ")"
+										: pair.definition
+									: ''
+							}
 							</DialogContentText>
 					}
 				</DialogContent>

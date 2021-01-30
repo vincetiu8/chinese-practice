@@ -6,7 +6,7 @@ import {Practice} from "./features/practice/Practice";
 import {Settings} from './features/settings/Settings'
 
 export default function App() {
-	return (
+	return ( // todo: add page to see practice history
 		<div className="App">
 			<NavBar/>
 			<Switch>

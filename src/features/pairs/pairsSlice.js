@@ -22,6 +22,11 @@ const initialState = pairsAdapter.getInitialState({
 		minimumGapBetweenElements: 5,
 		flipTerms: true,
 		askTerm: false,
+	},
+	stats: {
+		totalTerms: 0,
+		seenTerms: 0,
+		learnedTerms: 0,
 	}
 })
 
@@ -74,6 +79,22 @@ const pairsSlice = createSlice({
 				pairsAdapter.upsertMany(state, storedPairs)
 			}
 
+			let seenTerms = 0, learnedTerms = 0 // recalculate stats on reload
+			for (let id of state.ids) {
+				const term = state.entities[id]
+				if (term.seen) {
+					seenTerms += 1
+					if (term.rank > 0) {
+						learnedTerms += 1
+					}
+				}
+			}
+			state.stats = {
+				totalTerms: state.ids.length,
+				seenTerms: seenTerms,
+				learnedTerms: learnedTerms
+			}
+
 			json = localStorage.getItem('chinese-practice/settings')
 			if (json !== null) {
 				state.settings = JSON.parse(json)
@@ -83,8 +104,18 @@ const pairsSlice = createSlice({
 		},
 		deletePairs(state, action) {
 			pairsAdapter.removeAll(state)
+			state.stats = {
+				totalTerms: 0,
+				seenTerms: 0,
+				learnedTerms: 0
+			}
 		},
 		deletePair(state, action) {
+			state.stats = {
+				totalTerms: state.state.totalTerms - 1,
+				seenTerms: state.entities[action.payload].seen ? state.state.seenTerms - 1 : state.seenTerms,
+				learnedTerms: state.entities[action.payload].rank > 0 ? state.state.learnedTerms - 1 : state.learnedTerms
+			}
 			pairsAdapter.removeOne(state, action.payload)
 			state.status = 'idle'
 		},
@@ -97,6 +128,11 @@ const pairsSlice = createSlice({
 				pair.nonce = Math.random() - 0.5
 				return pair
 			})
+			state.stats = {
+				...state.stats,
+				seenTerms: 0,
+				learnedTerms: 0
+			}
 			pairsAdapter.updateMany(state, updatedPairs)
 			pairsSlice.caseReducers.updateSolvingPair(state, action)
 		},
@@ -105,6 +141,8 @@ const pairsSlice = createSlice({
 			localStorage.setItem('chinese-practice/pairs', json)
 			json = JSON.stringify(state.settings)
 			localStorage.setItem('chinese-practice/settings', json)
+			json = JSON.stringify(state.stats)
+			localStorage.setItem('chinese-practice/stats', json)
 		},
 		editPair(state, action) {
 			const {newId, definition} = action.payload
@@ -146,6 +184,10 @@ const pairsSlice = createSlice({
 					if (!state.solvingPair.seen) {
 						state.solvingPair.rank = state.settings.startingPoints
 						state.solvingPair.seen = true
+						state.stats = {
+							...state.stats,
+							seenTerms: state.seenTerms + 1
+						}
 						pairsAdapter.updateOne(state, state.solvingPair)
 					}
 					return
@@ -157,23 +199,37 @@ const pairsSlice = createSlice({
 				? state.solvingPair.id.toLowerCase()
 				: state.solvingPair.definition.toLowerCase())) {
 				if (state.status !== 'wrong') {
+					const newRank = state.solvingPair.rank + state.settings.gainedPointsOnSuccess
 					pairsAdapter.updateOne(state, {
 						id: state.solvingPair.id,
 						changes: {
-							rank: state.solvingPair.rank + state.settings.gainedPointsOnSuccess,
+							rank: newRank,
 							flip: state.settings.flipTerms ? !state.solvingPair.flip : state.settings.askTerm
 						}
 					})
+					if (state.solvingPair.rank <= 0 && newRank > 0) {
+						state.stats = {
+							...state.stats,
+							learnedTerms: state.learnedTerms + 1
+						}
+					}
 				}
 
 				pairsSlice.caseReducers.updateSolvingPair(state, action)
 			} else {
+				const newRank = state.solvingPair.rank - state.settings.lostPointsOnFail
 				pairsAdapter.updateOne(state, {
 					id: state.solvingPair.id,
 					changes: {
-						rank: state.solvingPair.rank - state.settings.lostPointsOnFail
+						rank: newRank
 					}
 				})
+				if (state.solvingPair.rank > 0 && newRank <= 0) {
+					state.stats = {
+						...state.stats,
+						learnedTerms: state.learnedTerms - 1
+					}
+				}
 				state.status = 'wrong'
 			}
 		},

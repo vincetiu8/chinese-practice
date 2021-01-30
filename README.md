@@ -14,7 +14,8 @@ Serve the page with your chosen program (i.e. `serve -s build`)
 
 ## Using the program
 The front-end works completely fine on its own. You can add, edit and delete terms and use the practice function to
-practice your memorization of the terms in your list!\
+practice your memorization of the terms in your list! Stats about your practice session are displayed below the
+practice card.\
 Note: the term-definition pairs are stored in the local browser storage. **If you clear your browser history, all your 
 terms will disappear!**
 
@@ -34,6 +35,9 @@ include:
 In addition to these variables, there are two more options regarding which way the pairs are quizzed:
 - `Flip Terms`: if the term and definition are flipped after successfully entering an answer
 - `Ask Term`: if the answer (to the first term if `Flip Terms` is true) should be the term instead of the definition
+
+Finally, there is a `Daily Goal` option that can be customized to set a daily (and by extension weekly and monthly
+goal). This is tracked below the practice area with the cards. If set to 0, this feature is turned off.
 
 ## Linking with [Google Translate](https://translate.google.com/)
 This project can (optionally) be linked with the [Google Cloud Translation API](https://cloud.google.com/translate)

@@ -6,6 +6,7 @@ import {StatCard} from "./StatCard";
 import {Grid} from "@material-ui/core";
 import {makeStyles} from "@material-ui/core/styles";
 import {HistoryStatCard} from "./HistoryStatCard";
+import {GoalMetDialog} from "./GoalMetDialog";
 
 const useStyles = makeStyles({
 	container: {
@@ -17,12 +18,13 @@ export const Practice = () => {
 	const classes = useStyles()
 
 	const stats = useSelector(state => state.pairs.stats)
-	const historyStats = useSelector(state => state.pairs.historyStats)
+	const learnedTerms = useSelector(state => state.pairs.historyStats.learnedTerms)
 
 	return (
 		<div>
 			<EditPairDialog/>
 			<WrongAnswerDialog/>
+			<GoalMetDialog/>
 			<Grid
 				container
 				direction="column"
@@ -50,12 +52,10 @@ export const Practice = () => {
 					</Grid>
 					<Grid container justify="center" spacing={3} className={classes.container}>
 						{
-							Object.keys(historyStats).map(historyRange => (
-								Object.keys(historyStats[historyRange]).map(stat => (
-									<Grid item key={stat}>
-										<HistoryStatCard historyRange={historyRange} stat={stat}/>
-									</Grid>
-								))
+							Object.keys(learnedTerms).map(historyRange => (
+								<Grid item key={historyRange}>
+									<HistoryStatCard historyRange={historyRange}/>
+								</Grid>
 							))
 						}
 					</Grid>

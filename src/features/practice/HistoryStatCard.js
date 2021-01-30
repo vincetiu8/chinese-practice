@@ -1,9 +1,16 @@
 import {useSelector} from "react-redux";
 import {Card, CardContent, Typography} from "@material-ui/core";
 
-export const HistoryStatCard = ({historyRange, stat}) => {
-	const statValue = useSelector(state => state.pairs.historyStats[historyRange][stat])
-	const totalTerms = useSelector(state => state.pairs.stats.totalTerms)
+export const HistoryStatCard = ({historyRange}) => {
+	const statValue = useSelector(state => state.pairs.historyStats.learnedTerms[historyRange])
+	const dailyGoal = useSelector(state => state.pairs.settings.dailyGoal)
+	let multiplier = 1
+	if (historyRange === "week") {
+		multiplier = 7
+	} else if (historyRange === "month") {
+		multiplier = 30
+	}
+	const goal = dailyGoal * multiplier
 
 	return (
 		<div>
@@ -14,14 +21,16 @@ export const HistoryStatCard = ({historyRange, stat}) => {
 							(historyRange.charAt(0).toUpperCase() + historyRange.slice(1))
 								.split(/(?=[A-Z])/)
 								.join(' ')
-								+ " "
-								+ (stat.charAt(0).toUpperCase() + stat.slice(1))
-								.split(/(?=[A-Z])/)
-								.join(' ')
+							+ " Learned Terms"
 						}
 					</Typography>
 					<Typography variant="h3">
-						{statValue + " (" + Math.round(statValue / totalTerms * 1000) / 10 + "%)"}
+						{
+							statValue +
+							(goal === 0
+								? ""
+								: "/" + goal + " (" + Math.round(statValue / goal * 1000) / 10 + "%)")
+						}
 					</Typography>
 				</CardContent>
 			</Card>

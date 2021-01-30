@@ -22,6 +22,7 @@ const initialState = pairsAdapter.getInitialState({
 		minimumGapBetweenElements: 5,
 		flipTerms: true,
 		askTerm: false,
+		dailyGoal: 25,
 	},
 	stats: {
 		totalTerms: 0,
@@ -32,21 +33,16 @@ const initialState = pairsAdapter.getInitialState({
 	},
 	currentDate: null,
 	historyStats: {
-		currentSession: {
-			seenTerms: 0,
-			learnedTerms: 0,
+		learnedTerms: {
+			currentSession: 0,
+			today: 0,
+			week: 0,
+			month: 0
 		},
-		today: {
-			seenTerms: 0,
-			learnedTerms: 0
-		},
-		week: {
-			seenTerms: 0,
-			learnedTerms: 0
-		},
-		month: {
-			seenTerms: 0,
-			learnedTerms: 0
+		goalMet: {
+			today: false,
+			week: false,
+			month: false
 		}
 	}
 })
@@ -131,31 +127,36 @@ const pairsSlice = createSlice({
 			const now = new Date()
 			const exactDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 			state.currentDate = exactDate.getTime()
-			if (state.currentDate in state.stats.history) {
-				state.historyStats.today = state.stats.history[state.currentDate]
-			}
 
+			let learnedTermsDay = 0, learnedTermsWeek = 0, learnedTermsMonth = 0
 			const currentMonth = new Date(state.currentDate - 2592000) // unix value of 1 month
 			const currentWeek = new Date(state.currentDate - 604800) // unix value of 1 week
 			const monthHistory = Object.keys(state.stats.history).filter(key => key > currentMonth)
 			if (monthHistory.length > 0) {
-				let seenTermsMonth = 0, learnedTermsMonth = 0, seenTermsWeek = 0, learnedTermsWeek = 0
 				for (const day of monthHistory) {
 					const dayData = state.stats.history[day]
-					seenTermsMonth += dayData.seenTerms
 					learnedTermsMonth += dayData.learnedTerms
-					if (day > currentWeek) {
-						seenTermsWeek += dayData.seenTerms
+					if (day > currentWeek)
 						learnedTermsWeek += dayData.learnedTerms
-					}
+					if (day === exactDate)
+						learnedTermsDay = dayData.learnedTerms
 				}
-				state.historyStats.month = {
-					seenTerms: seenTermsMonth,
-					learnedTerms: learnedTermsMonth
-				}
-				state.historyStats.week = {
-					seenTerms: seenTermsWeek,
-					learnedTerms: learnedTermsWeek
+			}
+
+			state.historyStats = {
+				learnedTerms: {
+					...state.historyStats.learnedTerms,
+					today: learnedTermsDay,
+					week: learnedTermsWeek,
+					month: learnedTermsMonth
+				},
+				goalMet: {
+					today: state.settings.dailyGoal !== 0 &&
+						state.historyStats.learnedTerms.today >= state.settings.dailyGoal,
+					week: state.settings.dailyGoal !== 0 &&
+						state.historyStats.learnedTerms.week >= state.settings.dailyGoal * 7,
+					month: state.settings.dailyGoal !== 0 &&
+						state.historyStats.learnedTerms.month >= state.settings.dailyGoal * 30
 				}
 			}
 
@@ -169,12 +170,43 @@ const pairsSlice = createSlice({
 				seenTerms: 0,
 				learnedTerms: 0
 			}
+			state.historyStats = {
+				learnedTerms: {
+					currentSession: 0,
+					today: 0,
+					week: 0,
+					month: 0
+				},
+				goalMet: {
+					today: false,
+					week: false,
+					month: false
+				}
+			}
 		},
 		deletePair(state, action) {
 			state.stats = {
 				totalTerms: state.state.totalTerms - 1,
 				seenTerms: state.entities[action.payload].seen ? state.state.seenTerms - 1 : state.seenTerms,
 				learnedTerms: state.entities[action.payload].rank > 0 ? state.state.learnedTerms - 1 : state.learnedTerms
+			}
+			if (state.entities[action.payload].rank > 0) {
+				state.historyStats = {
+					learnedTerms: {
+						currentSession: state.historyStats.learnedTerms.currentSession - 1,
+						today: state.historyStats.learnedTerms.today - 1,
+						week: state.historyStats.learnedTerms.week - 1,
+						month: state.historyStats.learnedTerms.month - 1
+					},
+					goalMet: {
+						today: state.settings.dailyGoal !== 0 &&
+							state.historyStats.learnedTerms.today >= state.settings.dailyGoal,
+						week: state.settings.dailyGoal !== 0 &&
+							state.historyStats.learnedTerms.week >= state.settings.dailyGoal * 7,
+						month: state.settings.dailyGoal !== 0 &&
+							state.historyStats.learnedTerms.month >= state.settings.dailyGoal * 30
+					}
+				}
 			}
 			pairsAdapter.removeOne(state, action.payload)
 			state.status = 'idle'
@@ -194,21 +226,16 @@ const pairsSlice = createSlice({
 				learnedTerms: 0
 			}
 			state.historyStats = {
-				currentSession: {
-					seenTerms: 0,
-					learnedTerms: 0,
+				learnedTerms: {
+					currentSession: 0,
+					today: 0,
+					week: 0,
+					month: 0
 				},
-				today: {
-					seenTerms: 0,
-					learnedTerms: 0
-				},
-				week: {
-					seenTerms: 0,
-					learnedTerms: 0
-				},
-				month: {
-					seenTerms: 0,
-					learnedTerms: 0
+				goalMet: {
+					today: false,
+					week: false,
+					month: false
 				}
 			}
 			pairsAdapter.updateMany(state, updatedPairs)
@@ -219,13 +246,7 @@ const pairsSlice = createSlice({
 			localStorage.setItem('chinese-practice/pairs', json)
 			json = JSON.stringify(state.settings)
 			localStorage.setItem('chinese-practice/settings', json)
-			let seenTerms = state.historyStats.today.seenTerms,
-				learnedTerms = state.historyStats.today.learnedTerms
-			state.stats.history[state.currentDate] = {
-				seenTerms: seenTerms,
-				learnedTerms: learnedTerms,
-			}
-
+			state.stats.history[state.currentDate] = state.historyStats.learnedTerms.today
 			json = JSON.stringify(state.stats.history)
 			localStorage.setItem('chinese-practice/history', json)
 		},
@@ -273,25 +294,6 @@ const pairsSlice = createSlice({
 							...state.stats,
 							seenTerms: state.stats.seenTerms + 1
 						}
-						state.historyStats = {
-							...state.historyStats,
-							currentSession: {
-								...state.historyStats.currentSession,
-								seenTerms: state.historyStats.currentSession.seenTerms + 1
-							},
-							today: {
-								...state.historyStats.today,
-								seenTerms: state.historyStats.today.seenTerms + 1
-							},
-							week: {
-								...state.historyStats.week,
-								seenTerms: state.historyStats.week.seenTerms + 1
-							},
-							month: {
-								...state.historyStats.month,
-								seenTerms: state.historyStats.week.seenTerms + 1
-							}
-						}
 						pairsAdapter.updateOne(state, state.solvingPair)
 					}
 					return
@@ -318,22 +320,23 @@ const pairsSlice = createSlice({
 						}
 						state.historyStats = {
 							...state.historyStats,
-							currentSession: {
-								...state.historyStats.currentSession,
-								learnedTerms: state.historyStats.currentSession.learnedTerms + 1
-							},
-							today: {
-								...state.historyStats.today,
-								learnedTerms: state.historyStats.today.learnedTerms + 1
-							},
-							week: {
-								...state.historyStats.week,
-								learnedTerms: state.historyStats.week.learnedTerms + 1
-							},
-							month: {
-								...state.historyStats.month,
-								learnedTerms: state.historyStats.week.learnedTerms + 1
+							learnedTerms: {
+								currentSession: state.historyStats.learnedTerms.currentSession + 1,
+								today: state.historyStats.learnedTerms.today + 1,
+								week: state.historyStats.learnedTerms.week + 1,
+								month: state.historyStats.learnedTerms.month + 1,
 							}
+						}
+						if (state.settings.dailyGoal !== 0) {
+							if (!state.historyStats.goalMet.today)
+								state.historyStats.goalMet.today =
+									state.historyStats.learnedTerms.today >= state.settings.dailyGoal
+							if (!state.historyStats.goalMet.week)
+								state.historyStats.goalMet.week =
+									state.historyStats.learnedTerms.week >= state.settings.dailyGoal * 7
+							if (!state.historyStats.goalMet.month)
+								state.historyStats.goalMet.month =
+									state.historyStats.learnedTerms.month >= state.settings.dailyGoal * 30
 						}
 					}
 				}
@@ -353,21 +356,12 @@ const pairsSlice = createSlice({
 						learnedTerms: state.stats.learnedTerms - 1
 					}
 					state.historyStats = {
-						currentSession: {
-							...state.historyStats.currentSession,
-							learnedTerms: state.historyStats.currentSession.learnedTerms - 1
-						},
-						today: {
-							...state.historyStats.today,
-							learnedTerms: state.historyStats.today.learnedTerms - 1
-						},
-						week: {
-							...state.historyStats.week,
-							learnedTerms: state.historyStats.week.learnedTerms - 1
-						},
-						month: {
-							...state.historyStats.month,
-							learnedTerms: state.historyStats.week.learnedTerms - 1
+						...state.historyStats,
+						learnedTerms: {
+							currentSession: state.historyStats.learnedTerms.currentSession - 1,
+							today: state.historyStats.learnedTerms.today - 1,
+							week: state.historyStats.learnedTerms.week - 1,
+							month: state.historyStats.learnedTerms.month - 1,
 						}
 					}
 				}
@@ -394,6 +388,7 @@ const pairsSlice = createSlice({
 				}
 			})
 			pairsAdapter.upsertMany(state, pairs)
+			state.stats.totalTerms += pairs.length
 		},
 		[addPairs.rejected]: (state, action) => {
 			state.status = "failed"

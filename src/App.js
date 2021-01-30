@@ -9,15 +9,11 @@ export default function App() {
 	return (
 		<div className="App">
 			<NavBar/>
-			<Grid container direction="column" alignItems="center" justify="center" style={{padding:24}}>
-				<Grid item sm={8}>
-					<Switch>
-						<Route exact path="/" component={Practice}/>
-						<Route exact path="/edit-pairs" component={PairSettings}/>
-						<Route exact path="/settings" component={Settings}/>
-					</Switch>
-				</Grid>
-			</Grid>
+			<Switch>
+				<Route exact path="/" component={Practice}/>
+				<Route exact path="/edit-pairs" component={PairSettings}/>
+				<Route exact path="/settings" component={Settings}/>
+			</Switch>
 		</div>
 	);
 }

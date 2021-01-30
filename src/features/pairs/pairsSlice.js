@@ -186,7 +186,7 @@ const pairsSlice = createSlice({
 						state.solvingPair.seen = true
 						state.stats = {
 							...state.stats,
-							seenTerms: state.seenTerms + 1
+							seenTerms: state.stats.seenTerms + 1
 						}
 						pairsAdapter.updateOne(state, state.solvingPair)
 					}
@@ -210,7 +210,7 @@ const pairsSlice = createSlice({
 					if (state.solvingPair.rank <= 0 && newRank > 0) {
 						state.stats = {
 							...state.stats,
-							learnedTerms: state.learnedTerms + 1
+							learnedTerms: state.stats.learnedTerms + 1
 						}
 					}
 				}
@@ -227,7 +227,7 @@ const pairsSlice = createSlice({
 				if (state.solvingPair.rank > 0 && newRank <= 0) {
 					state.stats = {
 						...state.stats,
-						learnedTerms: state.learnedTerms - 1
+						learnedTerms: state.stats.learnedTerms - 1
 					}
 				}
 				state.status = 'wrong'

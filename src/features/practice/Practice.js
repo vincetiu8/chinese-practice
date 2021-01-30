@@ -6,8 +6,16 @@ import {useEffect} from "react";
 import {EditPairDialog} from "../pairs/EditPairDialog";
 import {InfoCard} from "./InfoCard";
 import {Grid} from "@material-ui/core";
+import {makeStyles} from "@material-ui/core/styles";
+
+const useStyles = makeStyles({
+	container: {
+		padding: 24
+	}
+})
 
 export const Practice = () => {
+	const classes = useStyles()
 	const dispatch = useDispatch()
 
 	const loadStatus = useSelector(state => state.pairs.loadStatus)
@@ -23,7 +31,14 @@ export const Practice = () => {
 		<div>
 			<EditPairDialog/>
 			<WrongAnswerDialog/>
-			<Grid container direction="column" spacing={3}>
+			<Grid
+				container
+				direction="column"
+				alignItems="center"
+				justify="center"
+				spacing={3}
+				className={classes.container}
+			>
 				<Grid item>
 					<PracticeCard/>
 				</Grid>

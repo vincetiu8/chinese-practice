@@ -5,8 +5,16 @@ import {useEffect} from "react";
 import {fetchInfo, saveInfo} from "../pairs/pairsSlice";
 import {DeletePracticeInfoCard} from "./DeletePracticeInfoCard"
 import {SettingsCardBool} from "./SettingsCardBool";
+import {makeStyles} from "@material-ui/core/styles";
+
+const useStyles = makeStyles({
+	container: {
+		padding: 24
+	}
+})
 
 export const Settings = () => {
+	const classes = useStyles()
 	const dispatch = useDispatch()
 
 	useEffect(() => {
@@ -28,7 +36,14 @@ export const Settings = () => {
 	const settings = useSelector(state => state.pairs.settings)
 	return (
 		<div>
-			<Grid container alignItems="column" justify="center" spacing={3}>
+			<Grid
+				container
+				direction="column"
+				alignItems="center"
+				justify="center"
+				spacing={3}
+				className={classes.container}
+			>
 				<Grid item>
 					<Grid container spacing={3} justify="center">
 						{

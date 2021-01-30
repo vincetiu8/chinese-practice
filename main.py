@@ -29,5 +29,5 @@ def translate_text():
 
     return jsonify(result)
 
-
-app.run(port=5000) # hardcoded as to avoid confusion
+if __name__ == "__main__":
+    app.run(port=5000) # hardcoded as to avoid confusion

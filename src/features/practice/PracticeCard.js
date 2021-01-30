@@ -44,7 +44,7 @@ export const PracticeCard = () => {
 			speakText.lang = solvingPair.flip ? 'en' : 'zh'
 			synth.speak(speakText)
 		}
-	}, [solvingPair])
+	}, [solvingPair, loaded])
 
 	const [answer, setAnswer] = useState("")
 
@@ -62,47 +62,53 @@ export const PracticeCard = () => {
 			<Card elevation={12}>
 				<CardContent>
 					<Typography variant="h3">
-						{pairIds.length > 0
-							? (
-								solvingPair !== null
-									? solvingPair.flip
-										? solvingPair.definition
-										: solvingPair.id
-									: ''
-							)
-							: (
-								'No terms found, add some first!'
-							)
-
+						{
+							status === "invalidLearningMode"
+							? "You need to learn some terms first!"
+							: pairIds.length > 0
+								? (
+									solvingPair !== null
+										? solvingPair.flip
+											? solvingPair.definition
+											: solvingPair.id
+										: ''
+								)
+								: 'No terms found, add some first!'
 						}
 
 					</Typography>
 				</CardContent>
-				<CardActions className={classes.actions}>
-					{pairIds.length > 0
-						? (
-							<TextField
-								autoFocus
-								placeholder="Enter Definition Here"
-								value={answer}
-								InputProps={{
-									style: {fontSize: "3rem"}
-								}}
-								onChange={onChange}
-								onKeyPress={onKeyPress}
-							/>
-						)
-						: (
-							<Button
-								component={Link}
-								to='/edit-pairs'
-								variant="contained"
-							>
-								Add Terms
-							</Button>
-						)
-					}
-				</CardActions>
+				{status === "invalidLearningMode"
+					? ""
+					: (
+						<CardActions className={classes.actions}>
+							{
+								pairIds.length > 0
+									? (
+										<TextField
+											autoFocus
+											placeholder="Enter Definition Here"
+											value={answer}
+											InputProps={{
+												style: {fontSize: "3rem"}
+											}}
+											onChange={onChange}
+											onKeyPress={onKeyPress}
+										/>
+									)
+									: (
+										<Button
+											component={Link}
+											to='/edit-pairs'
+											variant="contained"
+										>
+											Add Terms
+										</Button>
+									)
+							}
+						</CardActions>
+					)
+				}
 			</Card>
 		</div>
 	)

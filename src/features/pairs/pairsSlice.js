@@ -20,9 +20,10 @@ const initialState = pairsAdapter.getInitialState({
 		gainedPointsOnSuccess: 1,
 		startingPoints: -3,
 		minimumGapBetweenElements: 5,
+		dailyGoal: 25,
 		flipTerms: true,
 		askTerm: false,
-		dailyGoal: 25,
+		learnedOnlyMode: false,
 	},
 	stats: {
 		totalTerms: 0,
@@ -89,6 +90,16 @@ const pairsSlice = createSlice({
 	name: 'pairs',
 	initialState,
 	reducers: {
+		setGoalMet(state, action) {
+			state.historyStats.goalMet = {
+				today: state.settings.dailyGoal !== 0 &&
+				state.historyStats.learnedTerms.today >= state.settings.dailyGoal,
+					week: state.settings.dailyGoal !== 0 &&
+				state.historyStats.learnedTerms.week >= state.settings.dailyGoal * 7,
+					month: state.settings.dailyGoal !== 0 &&
+				state.historyStats.learnedTerms.month >= state.settings.dailyGoal * 30
+			}
+		},
 		fetchInfo(state, action) {
 			let json = localStorage.getItem('chinese-practice/pairs')
 			if (json !== null) {
@@ -135,11 +146,11 @@ const pairsSlice = createSlice({
 			if (monthHistory.length > 0) {
 				for (const day of monthHistory) {
 					const dayData = state.stats.history[day]
-					learnedTermsMonth += dayData.learnedTerms
+					learnedTermsMonth += dayData
 					if (day > currentWeek)
-						learnedTermsWeek += dayData.learnedTerms
-					if (day === exactDate)
-						learnedTermsDay = dayData.learnedTerms
+						learnedTermsWeek += dayData
+					if (parseInt(day) === state.currentDate)
+						learnedTermsDay = dayData
 				}
 			}
 
@@ -149,17 +160,10 @@ const pairsSlice = createSlice({
 					today: learnedTermsDay,
 					week: learnedTermsWeek,
 					month: learnedTermsMonth
-				},
-				goalMet: {
-					today: state.settings.dailyGoal !== 0 &&
-						state.historyStats.learnedTerms.today >= state.settings.dailyGoal,
-					week: state.settings.dailyGoal !== 0 &&
-						state.historyStats.learnedTerms.week >= state.settings.dailyGoal * 7,
-					month: state.settings.dailyGoal !== 0 &&
-						state.historyStats.learnedTerms.month >= state.settings.dailyGoal * 30
 				}
 			}
 
+			pairsSlice.caseReducers.setGoalMet(state, action)
 			state.loadStatus = 'loaded'
 			state.status = 'idle'
 		},
@@ -197,17 +201,10 @@ const pairsSlice = createSlice({
 						today: state.historyStats.learnedTerms.today - 1,
 						week: state.historyStats.learnedTerms.week - 1,
 						month: state.historyStats.learnedTerms.month - 1
-					},
-					goalMet: {
-						today: state.settings.dailyGoal !== 0 &&
-							state.historyStats.learnedTerms.today >= state.settings.dailyGoal,
-						week: state.settings.dailyGoal !== 0 &&
-							state.historyStats.learnedTerms.week >= state.settings.dailyGoal * 7,
-						month: state.settings.dailyGoal !== 0 &&
-							state.historyStats.learnedTerms.month >= state.settings.dailyGoal * 30
 					}
 				}
 			}
+			pairsSlice.caseReducers.setGoalMet(state, action)
 			pairsAdapter.removeOne(state, action.payload)
 			state.status = 'idle'
 		},
@@ -275,9 +272,10 @@ const pairsSlice = createSlice({
 		updateSolvingPair(state, action) {
 			if (state.solvingPair !== null) {
 				state.pastSolvingPairs.push(state.solvingPair.id.toString())
+				const maxLen = state.settings.learnedOnlyMode ? state.stats.learnedTerms : state.stats.totalTerms
 				if (state.pastSolvingPairs.length >
 					Math.min(
-						Object.keys(state.entities).length - 1,
+						maxLen - 1,
 						state.settings.minimumGapBetweenElements
 					)
 				)
@@ -285,20 +283,29 @@ const pairsSlice = createSlice({
 			}
 			state.status = 'solving'
 			for (let id of state.ids) {
-				if (!state.pastSolvingPairs.includes(id.toString())) {
-					state.solvingPair = state.entities[id]
-					if (!state.solvingPair.seen) {
-						state.solvingPair.rank = state.settings.startingPoints
-						state.solvingPair.seen = true
-						state.stats = {
-							...state.stats,
-							seenTerms: state.stats.seenTerms + 1
-						}
-						pairsAdapter.updateOne(state, state.solvingPair)
-					}
-					return
+				if (state.pastSolvingPairs.includes(id.toString())) {
+					continue
 				}
+
+				state.solvingPair = state.entities[id]
+				if (state.settings.learnedOnlyMode &&
+					(!state.solvingPair.seen || state.solvingPair.rank <= 0))
+					continue
+
+				if (!state.solvingPair.seen) {
+					state.solvingPair.rank = state.settings.startingPoints
+					state.solvingPair.seen = true
+					state.stats = {
+						...state.stats,
+						seenTerms: state.stats.seenTerms + 1
+					}
+					pairsAdapter.updateOne(state, state.solvingPair)
+				}
+				return
 			}
+
+			// code runs when user hasn't learned any terms and is on learnedOnlyMode
+			state.status = 'invalidLearningMode'
 		},
 		submitAnswer(state, action) {
 			if (action.payload.toLowerCase() === (state.solvingPair.flip
@@ -370,6 +377,9 @@ const pairsSlice = createSlice({
 		},
 		updateSettings(state, action) {
 			Object.assign(state.settings, action.payload)
+			state.status = 'idle'
+			if (Object.keys(action.payload)[0] === "learnedOnlyMode")
+				state.pastSolvingPairs = []
 		}
 	},
 	extraReducers: {

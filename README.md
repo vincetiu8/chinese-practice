@@ -32,9 +32,11 @@ include:
 - `Starting Points`: the rank a newly seen term will be assigned to
 - `Minimum Gap Between Elements`: the minimum number of other terms that will be seen before seeing a term again
 
-In addition to these variables, there are two more options regarding which way the pairs are quizzed:
+In addition to these variables, there are options regarding which way the pairs are quizzed:
 - `Flip Terms`: if the term and definition are flipped after successfully entering an answer
 - `Ask Term`: if the answer (to the first term if `Flip Terms` is true) should be the term instead of the definition
+- `Learned Only Mode`: if you want to only practice terms you have already learned previously (good for testing
+  yourself)
 
 Finally, there is a `Daily Goal` option that can be customized to set a daily (and by extension weekly and monthly
 goal). This is tracked below the practice area with the cards. If set to 0, this feature is turned off.

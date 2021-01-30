@@ -43,7 +43,7 @@ export const WrongAnswerDialog = () => {
 
 	useEffect(() => {
 		if (open) {
-
+			wrong.play()
 		}
 	}, [open])
 

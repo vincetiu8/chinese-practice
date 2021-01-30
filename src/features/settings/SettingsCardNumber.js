@@ -10,7 +10,7 @@ export const SettingsCardNumber = ({setting}) => {
 	const settingValue = useSelector(state => state.pairs.settings[setting])
 	const [value, setValue] = useState(settingValue)
 
-	const onChange = e => setValue(e.target.value.parseInt())
+	const onChange = e => setValue(parseInt(e.target.value))
 
 	const onClick = (i) => setValue(value + i)
 	

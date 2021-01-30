@@ -4,14 +4,14 @@ import {useSelector} from "react-redux";
 import {selectPairsBySearchTerm} from "./pairsSlice";
 import {Pair} from "./Pair";
 
-export const PairsList = () => { // todo: add option to download pairs as json or txt
+export const PairsList = () => {
 	const [searchTerm, setSearchTerm] = useState("")
 
 	const onChange = (e) => setSearchTerm(e.target.value)
 
 	const pairs = useSelector(state => selectPairsBySearchTerm(state, searchTerm))
 
-	const content = pairs.map(pair => (
+	const content = pairs.slice(0, 100).map(pair => ( // limit displayed pairs to 100
 		<Grid item key={pair.id}>
 			<Pair pair={pair}/>
 		</Grid>

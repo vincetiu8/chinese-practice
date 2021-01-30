@@ -11,7 +11,7 @@ const useStyles = makeStyles({
 	}
 })
 
-export const Settings = () => { // todo: add mode to practice only seen terms or only learned terms
+export const Settings = () => {
 	const classes = useStyles()
 
 	const settings = useSelector(state => state.pairs.settings)

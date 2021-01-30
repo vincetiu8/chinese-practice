@@ -26,7 +26,7 @@ export default function App() {
 		}
 	}, [dispatch])
 
-	return ( // todo: add page to see practice history
+	return (
 		<div className="App">
 			<NavBar/>
 			<Switch>

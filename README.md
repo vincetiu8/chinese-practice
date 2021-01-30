@@ -17,7 +17,8 @@ The front-end works completely fine on its own. You can add, edit and delete ter
 practice your memorization of the terms in your list! Stats about your practice session are displayed below the
 practice card.\
 Note: the term-definition pairs are stored in the local browser storage. **If you clear your browser history, all your 
-terms will disappear!**
+terms will disappear!** If you want to safely clear your history, first download the terms and then reset your history,
+so you can copy the terms from the downloaded file back into the application afterwards.
 
 ### Editing the queueing algorithm variables
 If you want to edit the term queuing algorithm, navigate to the settings page and you can change the different variables

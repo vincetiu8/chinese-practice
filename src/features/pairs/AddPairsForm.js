@@ -6,7 +6,7 @@ import {addPairs} from "./pairsSlice";
 
 const useStyles = makeStyles({
 	textField: {
-		width: "50ch"
+		maxWidth: "25ch"
 	},
 	actions: {
 		justifyContent: "center"

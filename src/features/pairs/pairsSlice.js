@@ -140,8 +140,8 @@ const pairsSlice = createSlice({
 			state.currentDate = exactDate.getTime()
 
 			let learnedTermsDay = 0, learnedTermsWeek = 0, learnedTermsMonth = 0
-			const currentMonth = new Date(state.currentDate - 2592000) // unix value of 1 month
-			const currentWeek = new Date(state.currentDate - 604800) // unix value of 1 week
+			const currentMonth = new Date(state.currentDate - 2592000000) // unix value of 1 month
+			const currentWeek = new Date(state.currentDate - 604800000) // unix value of 1 week
 			const monthHistory = Object.keys(state.stats.history).filter(key => key > currentMonth)
 			if (monthHistory.length > 0) {
 				for (const day of monthHistory) {

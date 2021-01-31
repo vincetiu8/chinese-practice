@@ -11,7 +11,14 @@ export const PairsList = () => {
 
 	const pairs = useSelector(state => selectPairsBySearchTerm(state, searchTerm))
 
-	const content = pairs.slice(0, 100).map(pair => ( // limit displayed pairs to 100
+	const content = pairs.sort((a, b) => {
+		if (b.id > a.id) {
+			return -1
+		} else if (a.id > b.id) {
+			return 1
+		}
+		return 0
+	}).slice(0, 100).map(pair => ( // limit displayed pairs to 100
 		<Grid item key={pair.id}>
 			<Pair pair={pair}/>
 		</Grid>

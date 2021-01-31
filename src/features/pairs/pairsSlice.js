@@ -190,7 +190,7 @@ const pairsSlice = createSlice({
 		},
 		deletePair(state, action) {
 			state.stats = {
-				totalTerms: state.state.totalTerms - 1,
+				totalTerms: state.totalTerms - 1,
 				seenTerms: state.entities[action.payload].seen ? state.state.seenTerms - 1 : state.seenTerms,
 				learnedTerms: state.entities[action.payload].rank > 0 ? state.state.learnedTerms - 1 : state.learnedTerms
 			}

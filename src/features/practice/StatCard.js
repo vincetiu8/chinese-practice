@@ -19,7 +19,7 @@ export const StatCard = ({stat}) => {
 					<Typography variant="h3">
 						{statValue}
 						{
-							stat === "totalTerms"
+							stat === "totalTerms" || totalTerms === 0
 								? ""
 								: " (" + Math.round(statValue / totalTerms * 1000) / 10 + "%)"
 						}

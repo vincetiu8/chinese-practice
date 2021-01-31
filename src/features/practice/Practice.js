@@ -1,12 +1,14 @@
 import {PracticeCard} from "./PracticeCard";
 import {WrongAnswerDialog} from "./WrongAnswerDialog";
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {EditPairDialog} from "../pairs/EditPairDialog";
 import {StatCard} from "./StatCard";
 import {Grid} from "@material-ui/core";
 import {makeStyles} from "@material-ui/core/styles";
 import {HistoryStatCard} from "./HistoryStatCard";
 import {GoalMetDialog} from "./GoalMetDialog";
+import {useEffect} from "react";
+import {saveInfo} from "../pairs/pairsSlice";
 
 const useStyles = makeStyles({
 	container: {
@@ -17,8 +19,17 @@ const useStyles = makeStyles({
 export const Practice = () => {
 	const classes = useStyles()
 
+	const dispatch = useDispatch()
+
+	const status = useSelector(state => state.pairs.loadStatus)
 	const stats = useSelector(state => state.pairs.stats)
 	const learnedTerms = useSelector(state => state.pairs.historyStats.learnedTerms)
+
+	useEffect(() => {
+		if (status !== "unloaded") {
+			dispatch(saveInfo())
+		}
+	}, [dispatch, stats.learnedTerms, status])
 
 	return (
 		<div>

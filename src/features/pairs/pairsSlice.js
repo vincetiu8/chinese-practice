@@ -190,9 +190,10 @@ const pairsSlice = createSlice({
 		},
 		deletePair(state, action) {
 			state.stats = {
-				totalTerms: state.totalTerms - 1,
-				seenTerms: state.entities[action.payload].seen ? state.state.seenTerms - 1 : state.seenTerms,
-				learnedTerms: state.entities[action.payload].rank > 0 ? state.state.learnedTerms - 1 : state.learnedTerms
+				...state.stats,
+				totalTerms: state.stats.totalTerms - 1,
+				seenTerms: state.entities[action.payload].seen ? state.stats.seenTerms - 1 : state.stats.seenTerms,
+				learnedTerms: state.entities[action.payload].rank > 0 ? state.stats.learnedTerms - 1 : state.stats.learnedTerms
 			}
 			if (state.entities[action.payload].rank > 0) {
 				state.historyStats = {
@@ -206,6 +207,7 @@ const pairsSlice = createSlice({
 			}
 			pairsSlice.caseReducers.setGoalMet(state, action)
 			pairsAdapter.removeOne(state, action.payload)
+			pairsSlice.caseReducers.updateSolvingPair(state, action)
 			state.status = 'idle'
 		},
 		deletePracticeInfo(state, action) {

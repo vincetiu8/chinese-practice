@@ -4,6 +4,9 @@ import {PairsList} from "./PairsList";
 import {AddPairsForm} from "./AddPairsForm";
 import {EditPairDialog} from "./EditPairDialog";
 import {DownloadPairsCard} from "./DownloadPairsCard";
+import {DownloadDataCard} from "./DownloadDataCard";
+import {UploadDataCard} from "./UploadDataCard";
+import {UploadPairsCard} from "./UploadPairsCard";
 
 export const PairSettings = () => {
 	return (
@@ -14,7 +17,24 @@ export const PairSettings = () => {
 					<AddPairsForm/>
 				</Grid>
 				<Grid item>
-					<DownloadPairsCard/>
+					<Grid container>
+						<Grid item>
+							<DownloadPairsCard/>
+						</Grid>
+						<Grid item>
+							<UploadPairsCard/>
+						</Grid>
+					</Grid>
+				</Grid>
+				<Grid item>
+					<Grid container>
+						<Grid item>
+							<DownloadDataCard/>
+						</Grid>
+						<Grid item>
+							<UploadDataCard/>
+						</Grid>
+					</Grid>
 				</Grid>
 				<Grid item>
 					<DeletePairsCard/>

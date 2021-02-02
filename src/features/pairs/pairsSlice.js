@@ -52,12 +52,21 @@ const serverURL = "http://" + window.location.hostname + ":5000/"
 
 export const addPairs = createAsyncThunk(
 	'pairs/addPairs',
-	async rawPairs => {
+	async content => {
 		let pairsToTranslate = []
 		let pairs = []
 
+		const rawLines = content.split("\n")
+		const rawPairs = rawLines.map(rawLine =>
+			rawLine.indexOf(' ') !== -1
+				? [
+					rawLine.substr(0, rawLine.indexOf(' ')),
+					rawLine.substr(rawLine.indexOf(' ') + 1)
+				] : [rawLine]
+		)
+
 		for (let pair of rawPairs) {
-			if (pair[0] === "")
+			if (pair.length === 0)
 				continue
 			if (pair.length === 1) {
 				pairsToTranslate.push(pair[0])
@@ -93,6 +102,9 @@ const pairsSlice = createSlice({
 	name: 'pairs',
 	initialState,
 	reducers: {
+		addDataFromFile(state, action) {
+			pairsAdapter.upsertMany(state, action.payload)
+		},
 		setGoalMet(state, action) {
 			state.historyStats.goalMet = {
 				today: state.settings.dailyGoal !== 0 &&
@@ -268,6 +280,7 @@ const pairsSlice = createSlice({
 			}
 			state.editingPair = null
 			state.solvingPair = null
+			state.stats.totalTerms = state.ids.length
 			state.status = 'idle'
 		},
 		updateEditingPair(state, action) {
@@ -403,7 +416,7 @@ const pairsSlice = createSlice({
 				}
 			})
 			pairsAdapter.upsertMany(state, pairs)
-			state.stats.totalTerms += pairs.length
+			state.stats.totalTerms = state.ids.length
 		},
 		[addPairs.rejected]: (state, action) => {
 			state.status = "failed"
@@ -422,7 +435,8 @@ export const {
 	updateSolvingPair,
 	submitAnswer,
 	updateSettings,
-	deletePracticeInfo
+	deletePracticeInfo,
+	addDataFromFile,
 } = pairsSlice.actions
 
 export default pairsSlice.reducer

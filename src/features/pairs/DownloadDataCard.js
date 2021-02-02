@@ -12,17 +12,13 @@ const useStyles = makeStyles({
 	}
 });
 
-export const DownloadPairsCard = () => {
+export const DownloadDataCard = () => {
 	const classes = useStyles()
 
 	const pairs = useSelector(state => state.pairs.entities)
 
 	const onClick = () => {
-		let data = ""
-		for (let pair of Object.values(pairs)) {
-			data += pair.id + " " + pair.definition + "\n"
-		}
-		fileDownload(data, "pairs.txt")
+		fileDownload(JSON.stringify(pairs), "pairs.json")
 	}
 
 	return (
@@ -34,7 +30,7 @@ export const DownloadPairsCard = () => {
 						classes={{root: classes.button}}
 						onClick={onClick}
 					>
-						Download Pairs
+						Download Pair Data
 					</Button>
 				</CardActions>
 			</Card>

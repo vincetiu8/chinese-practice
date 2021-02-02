@@ -23,17 +23,7 @@ export const AddPairsForm = () => {
 	const onChange = e => setValue(e.target.value)
 
 	function onClick() {
-		const rawLines = value.split("\n")
-		const rawPairs = rawLines.map(rawLine =>
-			rawLine.indexOf(' ') !== -1
-				? [
-					rawLine.substr(0, rawLine.indexOf(' ')),
-					rawLine.substr(rawLine.indexOf(' ') + 1)
-				] : [rawLine]
-		)
-		const filteredPairs = rawPairs.filter(pair => pair.length > 0)
-
-		dispatch(addPairs(filteredPairs))
+		dispatch(addPairs(value))
 		setValue("")
 	}
 

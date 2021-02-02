@@ -104,6 +104,21 @@ const pairsSlice = createSlice({
 	reducers: {
 		addDataFromFile(state, action) {
 			pairsAdapter.upsertMany(state, action.payload)
+			let seenTerms = 0, learnedTerms = 0 // recalculate stats
+			for (let id of state.ids) {
+				const term = state.entities[id]
+				if (term.seen) {
+					seenTerms += 1
+					if (term.rank > 0) {
+						learnedTerms += 1
+					}
+				}
+			}
+			state.stats = {
+				totalTerms: state.ids.length,
+				seenTerms: seenTerms,
+				learnedTerms: learnedTerms
+			}
 		},
 		setGoalMet(state, action) {
 			state.historyStats.goalMet = {

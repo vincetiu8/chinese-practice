@@ -1,25 +1,31 @@
 import {useEffect, useState} from "react";
-import {
-	Button,
-	Dialog,
-	DialogActions,
-	DialogContent,
-	DialogContentText,
-	DialogTitle, IconButton,
-	TextField,
-} from "@material-ui/core";
+import {Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField,} from "@material-ui/core";
 import {useDispatch, useSelector} from "react-redux";
-import {submitAnswer, updateEditingPair, deletePair} from "../pairs/pairsSlice";
+import {deletePair, submitAnswer, updateEditingPair} from "../pairs/pairsSlice";
 import {Delete, Edit} from "@material-ui/icons";
 import pinyin from "chinese-to-pinyin"
 import UIFx from "uifx";
 import wrongAudio from "./wrong.mp3"
+import {makeStyles} from "@material-ui/core/styles";
 
 const wrong = new UIFx(wrongAudio)
 const synth = window.speechSynthesis
 
+const useStyles = makeStyles({
+	dialog: {
+		flexDirection: "column"
+	},
+	button: {
+		fontSize: "3rem",
+		textTransform: "none",
+		width: "fit-content",
+		whiteSpace: "nowrap"
+	}
+})
+
 export const WrongAnswerDialog = () => {
 	const dispatch = useDispatch()
+	const classes = useStyles()
 
 	const pair = useSelector(state => state.pairs.solvingPair)
 	const status = useSelector(state => state.pairs.status)
@@ -41,6 +47,12 @@ export const WrongAnswerDialog = () => {
 		}
 	}
 
+	const speak = (term) => {
+		const speakText = new SpeechSynthesisUtterance((term ? pair.flip : !pair.flip) ? pair.definition : pair.id)
+		speakText.lang = pair.flip ? 'en' : 'zh'
+		synth.speak(speakText)
+	}
+
 	useEffect(() => {
 		if (open) {
 			wrong.play()
@@ -49,18 +61,14 @@ export const WrongAnswerDialog = () => {
 
 	useEffect(() => {
 		if (open && !showAnswer) {
-			let speakText = new SpeechSynthesisUtterance(pair.flip ? pair.definition : pair.id)
-			speakText.lang = pair.flip ? 'en' : 'zh'
-			synth.speak(speakText)
-			speakText = new SpeechSynthesisUtterance(pair.flip ? pair.id : pair.definition)
-			speakText.lang = pair.flip ? 'zh' : 'en'
-			synth.speak(speakText)
+			speak(true)
+			speak(false)
 		}
 	}, [open, showAnswer, pair])
 
 	return (
 		<div>
-			<Dialog open={open}>
+			<Dialog open={open} maxWidth={false} className={classes.dialog}>
 				<DialogTitle>
 					{
 						showAnswer
@@ -69,17 +77,22 @@ export const WrongAnswerDialog = () => {
 					}
 				</DialogTitle>
 				<DialogContent>
-					<DialogContentText variant="h3" color="textPrimary">
+					<Button
+						className={classes.button}
+						onClick={() => speak(true)}
+					>
 						Term: {
 						open
 							? pair.flip
-								? pair.definition
-								: showAnswer
-									? pair.id
-									: pair.id + ' (' + pinyin(pair.id) + ")"
+							? pair.definition
+							: showAnswer
+								? pair.id
+								: pair.id + ' (' + pinyin(pair.id) + ")"
 							: ''
 					}
-					</DialogContentText>
+					</Button>
+				</DialogContent>
+				<DialogContent>
 					{
 						showAnswer
 							?
@@ -94,15 +107,15 @@ export const WrongAnswerDialog = () => {
 								onKeyPress={onKeyPress}
 							/>
 							:
-							<DialogContentText variant="h3">
+							<Button className={classes.button} onClick={() => speak(false)}>
 								Correct Answer: {
 								open
 									? pair.flip
-										? pair.id + ' (' + pinyin(pair.id) + ")"
-										: pair.definition
+									? pair.id + ' (' + pinyin(pair.id) + ")"
+									: pair.definition
 									: ''
 							}
-							</DialogContentText>
+							</Button>
 					}
 				</DialogContent>
 				<DialogActions>

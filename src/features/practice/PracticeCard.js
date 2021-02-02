@@ -12,6 +12,9 @@ const synth = window.speechSynthesis
 const useStyles = makeStyles({
 	actions: {
 		justifyContent: 'center'
+	},
+	button: {
+		fontSize: "3rem"
 	}
 })
 
@@ -33,6 +36,12 @@ export const PracticeCard = () => {
 		}
 	}, [status, dispatch, pairIds.length])
 
+	const speakTerm = () => {
+		let speakText = new SpeechSynthesisUtterance(solvingPair.flip ? solvingPair.definition : solvingPair.id)
+		speakText.lang = solvingPair.flip ? 'en' : 'zh'
+		synth.speak(speakText)
+	}
+	
 	useEffect(() => {
 		if (solvingPair !== null) {
 			if (loaded) {
@@ -40,9 +49,8 @@ export const PracticeCard = () => {
 			} else {
 				setLoaded(true)
 			}
-			let speakText = new SpeechSynthesisUtterance(solvingPair.flip ? solvingPair.definition : solvingPair.id)
-			speakText.lang = solvingPair.flip ? 'en' : 'zh'
-			synth.speak(speakText)
+
+			speakTerm()
 		}
 	}, [solvingPair, loaded])
 
@@ -61,22 +69,31 @@ export const PracticeCard = () => {
 		<div>
 			<Card elevation={12}>
 				<CardContent>
-					<Typography variant="h3">
-						{
-							status === "invalidLearningMode"
-							? "You need to learn some terms first!"
+					{
+						status === "invalidLearningMode"
+							? (
+								<Typography variant="h3">
+									You need to learn some terms first!
+								</Typography>
+							)
 							: pairIds.length > 0
-								? (
-									solvingPair !== null
-										? solvingPair.flip
+							? (
+								<Button onClick={speakTerm} className={classes.button}>
+									{
+										solvingPair !== null
+											? solvingPair.flip
 											? solvingPair.definition
 											: solvingPair.id
-										: ''
-								)
-								: 'No terms found, add some first!'
-						}
-
-					</Typography>
+											: ''
+									}
+								</Button>
+							)
+							: (
+								<Typography variant="h3">
+									No terms found, add some first!
+								</Typography>
+							)
+					}
 				</CardContent>
 				{status === "invalidLearningMode"
 					? ""

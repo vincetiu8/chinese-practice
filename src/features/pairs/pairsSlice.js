@@ -48,6 +48,8 @@ const initialState = pairsAdapter.getInitialState({
 	}
 })
 
+const serverURL = "http://" + window.location.hostname + ":5000/"
+
 export const addPairs = createAsyncThunk(
 	'pairs/addPairs',
 	async rawPairs => {
@@ -69,7 +71,8 @@ export const addPairs = createAsyncThunk(
 
 		if (pairsToTranslate.length > 0) {
 			for (let i = 0; i < pairsToTranslate.length; i += 128) { // separated into 128 term chunks
-				const result = await axios.post('http://127.0.0.1:5000/', { // hardcoded to avoid confusion
+				console.log(serverURL)
+				const result = await axios.post(serverURL, { // hardcoded to avoid confusion
 					terms: pairsToTranslate.slice(i, Math.min(i + 128, pairsToTranslate.length))
 				})
 

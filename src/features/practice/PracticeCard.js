@@ -14,7 +14,8 @@ const useStyles = makeStyles({
 		justifyContent: 'center'
 	},
 	button: {
-		fontSize: "3rem"
+		fontSize: "3rem",
+		textTransform: "none"
 	}
 })
 

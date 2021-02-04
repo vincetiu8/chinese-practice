@@ -1,5 +1,6 @@
 import {createAsyncThunk, createEntityAdapter, createSelector, createSlice} from "@reduxjs/toolkit";
 import axios from "axios";
+var unorm = require("unorm")
 
 const pairsAdapter = createEntityAdapter({
 	sortComparer: (a, b) => {
@@ -72,7 +73,7 @@ export const addPairs = createAsyncThunk(
 				pairsToTranslate.push(pair[0])
 			} else {
 				pairs.push({
-					id: pair[0],
+					id: unorm.nfd(pair[0]).trim(),
 					definition: pair[1]
 				})
 			}
@@ -87,7 +88,7 @@ export const addPairs = createAsyncThunk(
 
 				for (let j = 0; j < result.data.length; j++) {
 					pairs.push({
-						id: pairsToTranslate[i + j],
+						id: unorm.nfd(pairsToTranslate[i + j]).trim(),
 						definition: result.data[j].translatedText.toLowerCase()
 					})
 				}
@@ -151,6 +152,12 @@ const pairsSlice = createSlice({
 					if (term.rank > 0) {
 						learnedTerms += 1
 					}
+				}
+				const trimmed = term.id.trim()
+				if (trimmed !== id) {
+					pairsAdapter.removeOne(state, term)
+					term.id = trimmed
+					pairsAdapter.addOne(state, term)
 				}
 			}
 			state.stats = {
@@ -421,16 +428,19 @@ const pairsSlice = createSlice({
 		},
 		[addPairs.fulfilled]: (state, action) => {
 			state.status = "idle"
-			const pairs = action.payload.map(pair => {
-				return {
-					...pair,
-					rank: 0,
-					seen: false,
-					flip: state.settings.askTerm,
-					nonce: Math.random() - 0.5
+			for (const pair of action.payload) {
+				if (state.ids.includes(pair.id)) {
+					state.entities[pair.id].definition = pair.definition
+				} else {
+					pairsAdapter.upsertOne(state, {
+						...pair,
+						rank: 0,
+						seen: false,
+						flip: state.settings.askTerm,
+						nonce: Math.random() - 0.5
+					})
 				}
-			})
-			pairsAdapter.upsertMany(state, pairs)
+			}
 			state.stats.totalTerms = state.ids.length
 		},
 		[addPairs.rejected]: (state, action) => {

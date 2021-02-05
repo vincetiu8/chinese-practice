@@ -1,6 +1,6 @@
 import {createAsyncThunk, createEntityAdapter, createSelector, createSlice} from "@reduxjs/toolkit";
 import axios from "axios";
-var unorm = require("unorm")
+let unorm = require("unorm")
 
 const pairsAdapter = createEntityAdapter({
 	sortComparer: (a, b) => {
@@ -22,6 +22,7 @@ const initialState = pairsAdapter.getInitialState({
 		startingPoints: -3,
 		minimumGapBetweenElements: 5,
 		dailyGoal: 25,
+		dayInterval: 3,
 		flipTerms: true,
 		askTerm: false,
 		learnedOnlyMode: false,
@@ -144,12 +145,22 @@ const pairsSlice = createSlice({
 				history = JSON.parse(json)
 			}
 
+			json = localStorage.getItem('chinese-practice/settings')
+			if (json !== null) {
+				state.settings = JSON.parse(json)
+			}
+
 			let seenTerms = 0, learnedTerms = 0 // recalculate stats on reload
+			const now = new Date()
+			const exactDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+			state.currentDate = exactDate.getTime()
 			for (let id of state.ids) {
 				const term = state.entities[id]
-				if (term.seen) {
+				if (term.seen > 0) {
 					seenTerms += 1
-					if (term.rank > 0) {
+					if (term.lastSeen < state.currentDate - 86400000 * state.settings.dayInterval ** (term.seen - 1)) {
+						term.rank = 0
+					} else if (term.rank > 0) {
 						learnedTerms += 1
 					}
 				}
@@ -166,15 +177,6 @@ const pairsSlice = createSlice({
 				learnedTerms: learnedTerms,
 				history: history
 			}
-
-			json = localStorage.getItem('chinese-practice/settings')
-			if (json !== null) {
-				state.settings = JSON.parse(json)
-			}
-
-			const now = new Date()
-			const exactDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-			state.currentDate = exactDate.getTime()
 
 			let learnedTermsDay = 0, learnedTermsWeek = 0, learnedTermsMonth = 0
 			const currentMonth = new Date(state.currentDate - 2592000000) // unix value of 1 month
@@ -329,18 +331,21 @@ const pairsSlice = createSlice({
 
 				state.solvingPair = state.entities[id]
 				if (state.settings.learnedOnlyMode &&
-					(!state.solvingPair.seen || state.solvingPair.rank <= 0))
+					(state.solvingPair.seen === 0 || state.solvingPair.rank <= 0))
 					continue
 
-				if (!state.solvingPair.seen) {
+				if (state.solvingPair.seen === 0) {
 					state.solvingPair.rank = state.settings.startingPoints
-					state.solvingPair.seen = true
 					state.stats = {
 						...state.stats,
 						seenTerms: state.stats.seenTerms + 1
 					}
-					pairsAdapter.updateOne(state, state.solvingPair)
+					state.solvingPair.seen = 1
 				}
+
+				state.solvingPair.lastSeen = state.currentDate
+				pairsAdapter.updateOne(state, state.solvingPair)
+
 				return
 			}
 
@@ -353,14 +358,16 @@ const pairsSlice = createSlice({
 				: state.solvingPair.definition.toLowerCase())) {
 				if (state.status !== 'wrong') {
 					const newRank = state.solvingPair.rank + state.settings.gainedPointsOnSuccess
+					const learned = state.solvingPair.rank <= 0 && newRank > 0
 					pairsAdapter.updateOne(state, {
 						id: state.solvingPair.id,
 						changes: {
 							rank: newRank,
+							seen: learned ? state.solvingPair.seen + 1 : state.solvingPair.seen,
 							flip: state.settings.flipTerms ? !state.solvingPair.flip : state.settings.askTerm
 						}
 					})
-					if (state.solvingPair.rank <= 0 && newRank > 0) {
+					if (learned) {
 						state.stats = {
 							...state.stats,
 							learnedTerms: state.stats.learnedTerms + 1
@@ -394,7 +401,8 @@ const pairsSlice = createSlice({
 				pairsAdapter.updateOne(state, {
 					id: state.solvingPair.id,
 					changes: {
-						rank: newRank
+						rank: newRank,
+						seen: 1
 					}
 				})
 				if (state.solvingPair.rank > 0 && newRank <= 0) {
@@ -435,13 +443,15 @@ const pairsSlice = createSlice({
 					pairsAdapter.upsertOne(state, {
 						...pair,
 						rank: 0,
-						seen: false,
+						seen: 0,
+						lastSeen: -1,
 						flip: state.settings.askTerm,
 						nonce: Math.random() - 0.5
 					})
 				}
 			}
 			state.stats.totalTerms = state.ids.length
+			pairsSlice.caseReducers.saveInfo(state, action)
 		},
 		[addPairs.rejected]: (state, action) => {
 			state.status = "failed"

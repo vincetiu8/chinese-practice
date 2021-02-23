@@ -253,7 +253,8 @@ const pairsSlice = createSlice({
 			const updatedPairs = Object.values(state.ids).map(id => {
 				const pair = state.entities[id]
 				pair.rank = 0
-				pair.seen = false
+				pair.seen = 0
+				pair.lastSeen = -1
 				pair.flip = state.settings.askTerm
 				pair.nonce = Math.random() - 0.5
 				return pair
@@ -297,7 +298,7 @@ const pairsSlice = createSlice({
 					id: newId,
 					definition: definition,
 					rank: 0,
-					seen: false,
+					seen: -1,
 					flip: state.settings.askTerm,
 					nonce: Math.random() - 0.5
 				})

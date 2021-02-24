@@ -156,10 +156,13 @@ const pairsSlice = createSlice({
 			state.currentDate = exactDate.getTime()
 			for (let id of state.ids) {
 				const term = state.entities[id]
-				if (term.seen > 0) {
+				if (term.seen > 1) {
 					seenTerms += 1
-					if (term.lastSeen < state.currentDate - 86400000 * state.settings.dayInterval ** (term.seen - 1)) {
-						term.rank = 0
+					if (term.lastSeen <= state.currentDate - 86400000 * state.settings.dayInterval ** (term.seen - 2)) {
+						pairsAdapter.updateOne(state, {
+							...term,
+							rank: 0
+						})
 					} else if (term.rank > 0) {
 						learnedTerms += 1
 					}

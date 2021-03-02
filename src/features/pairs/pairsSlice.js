@@ -1,5 +1,6 @@
 import {createAsyncThunk, createEntityAdapter, createSelector, createSlice} from "@reduxjs/toolkit";
 import axios from "axios";
+
 let unorm = require("unorm")
 
 const pairsAdapter = createEntityAdapter({
@@ -125,11 +126,11 @@ const pairsSlice = createSlice({
 		setGoalMet(state, action) {
 			state.historyStats.goalMet = {
 				today: state.settings.dailyGoal !== 0 &&
-				state.historyStats.learnedTerms.today >= state.settings.dailyGoal,
-					week: state.settings.dailyGoal !== 0 &&
-				state.historyStats.learnedTerms.week >= state.settings.dailyGoal * 7,
-					month: state.settings.dailyGoal !== 0 &&
-				state.historyStats.learnedTerms.month >= state.settings.dailyGoal * 30
+					state.historyStats.learnedTerms.today >= state.settings.dailyGoal,
+				week: state.settings.dailyGoal !== 0 &&
+					state.historyStats.learnedTerms.week >= state.settings.dailyGoal * 7,
+				month: state.settings.dailyGoal !== 0 &&
+					state.historyStats.learnedTerms.month >= state.settings.dailyGoal * 30
 			}
 		},
 		fetchInfo(state, action) {
@@ -156,15 +157,15 @@ const pairsSlice = createSlice({
 			state.currentDate = exactDate.getTime()
 			for (let id of state.ids) {
 				const term = state.entities[id]
-				if (term.seen > 1) {
+				if (term.seen > 0) {
 					seenTerms += 1
-					if (term.lastSeen <= state.currentDate - 86400000 * state.settings.dayInterval ** (term.seen - 2)) {
-						pairsAdapter.updateOne(state, {
-							...term,
-							rank: 0
-						})
-					} else if (term.rank > 0) {
+					if (term.seen > 1) {
 						learnedTerms += 1
+						if (term.lastSeen <= state.currentDate - 86400000 * state.settings.dayInterval ** (term.seen - 2)) {
+							term.rank = 0
+							pairsAdapter.updateOne(state, term)
+							console.log(id)
+						}
 					}
 				}
 				const trimmed = term.id.trim()
@@ -371,7 +372,7 @@ const pairsSlice = createSlice({
 							flip: state.settings.flipTerms ? !state.solvingPair.flip : state.settings.askTerm
 						}
 					})
-					if (learned) {
+					if (learned && state.solvingPair.seen === 1) {
 						state.stats = {
 							...state.stats,
 							learnedTerms: state.stats.learnedTerms + 1
@@ -409,7 +410,7 @@ const pairsSlice = createSlice({
 						seen: 1
 					}
 				})
-				if (state.solvingPair.rank > 0 && newRank <= 0) {
+				if (state.solvingPair.seen > 1 || (state.solvingPair.rank > 0 && newRank <= 0)) {
 					state.stats = {
 						...state.stats,
 						learnedTerms: state.stats.learnedTerms - 1

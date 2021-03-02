@@ -4,6 +4,7 @@ import {SettingsCardNumber} from "./SettingsCardNumber";
 import {DeletePracticeInfoCard} from "./DeletePracticeInfoCard"
 import {SettingsCardBool} from "./SettingsCardBool";
 import {makeStyles} from "@material-ui/core/styles";
+import {DeleteHistoryInfoCard} from "./DeleteHistoryInfoCard";
 
 const useStyles = makeStyles({
 	container: {
@@ -41,6 +42,7 @@ export const Settings = () => {
 				</Grid>
 				<Grid item>
 					<DeletePracticeInfoCard/>
+					<DeleteHistoryInfoCard/>
 				</Grid>
 			</Grid>
 		</div>

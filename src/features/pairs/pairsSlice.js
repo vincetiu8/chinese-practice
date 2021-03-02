@@ -284,6 +284,24 @@ const pairsSlice = createSlice({
 			pairsAdapter.updateMany(state, updatedPairs)
 			pairsSlice.caseReducers.updateSolvingPair(state, action)
 		},
+		deleteHistoryInfo(state, action) {
+			state.stats.history = {
+				[state.currentDate]: state.stats.learnedTerms
+			}
+			state.historyStats = {
+				learnedTerms: {
+					currentSession: 0,
+					today: state.stats.learnedTerms,
+					week: state.stats.learnedTerms,
+					month: state.stats.learnedTerms,
+				},
+				goalMet: {
+					today: state.stats.learnedTerms >= state.settings.dailyGoal,
+					week: state.stats.learnedTerms >= state.settings.dailyGoal * 7,
+					month: state.stats.learnedTerms >= state.settings.dailyGoal * 30
+				}
+			}
+		},
 		saveInfo(state, action) {
 			let json = JSON.stringify(state.entities)
 			localStorage.setItem('chinese-practice/pairs', json)
@@ -477,6 +495,7 @@ export const {
 	updateSettings,
 	deletePracticeInfo,
 	addDataFromFile,
+	deleteHistoryInfo,
 } = pairsSlice.actions
 
 export default pairsSlice.reducer

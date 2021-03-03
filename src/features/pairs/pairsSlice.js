@@ -376,7 +376,8 @@ const pairsSlice = createSlice({
 			state.status = 'invalidLearningMode'
 		},
 		submitAnswer(state, action) {
-			if (action.payload.toLowerCase() === (state.solvingPair.flip
+			const answer = action.payload.toLowerCase()
+			if (answer === (state.solvingPair.flip
 				? state.solvingPair.id.toLowerCase()
 				: state.solvingPair.definition.toLowerCase())) {
 				if (state.status !== 'wrong') {
@@ -420,7 +421,30 @@ const pairsSlice = createSlice({
 
 				pairsSlice.caseReducers.updateSolvingPair(state, action)
 			} else {
-				const newRank = state.solvingPair.rank - state.settings.lostPointsOnFail
+				if (state.status !== "wrong" && state.solvingPair.flip) {
+					const answer = action.payload.toLowerCase()
+					if (answer in state.ids && state.entities[answer].definition === state.solvingPair.definition) {
+						pairsAdapter.updateMany(state, [
+							{
+								id: state.solvingPair.id,
+								changes: {
+									flip: true
+								}
+							},
+							{
+								id: answer,
+								changes: {
+									flip: true
+								}
+							}
+						])
+					}
+
+					pairsSlice.caseReducers.updateSolvingPair(state, action)
+					return
+				}
+
+				const newRank = state.solvingPair.rank > 0 ? state.settings.startingPoints : state.solvingPair.rank - state.settings.lostPointsOnFail
 				pairsAdapter.updateOne(state, {
 					id: state.solvingPair.id,
 					changes: {
@@ -428,7 +452,7 @@ const pairsSlice = createSlice({
 						seen: 1
 					}
 				})
-				if (state.solvingPair.seen > 1 || (state.solvingPair.rank > 0 && newRank <= 0)) {
+				if (state.status !== "wrong" && state.solvingPair.seen > 1) {
 					state.stats = {
 						...state.stats,
 						learnedTerms: state.stats.learnedTerms - 1

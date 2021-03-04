@@ -423,7 +423,9 @@ const pairsSlice = createSlice({
 			} else {
 				if (state.status !== "wrong" && state.solvingPair.flip) {
 					const answer = action.payload.toLowerCase()
-					if (answer in state.ids && state.entities[answer].definition === state.solvingPair.definition) {
+					if (answer in state.entities && state.entities[answer].definition === state.solvingPair.definition) {
+						console.log(state.entities[answer].definition)
+						console.log(state.solvingPair.definition)
 						pairsAdapter.updateMany(state, [
 							{
 								id: state.solvingPair.id,
@@ -438,10 +440,9 @@ const pairsSlice = createSlice({
 								}
 							}
 						])
+						pairsSlice.caseReducers.updateSolvingPair(state, action)
+						return
 					}
-
-					pairsSlice.caseReducers.updateSolvingPair(state, action)
-					return
 				}
 
 				const newRank = state.solvingPair.rank > 0 ? state.settings.startingPoints : state.solvingPair.rank - state.settings.lostPointsOnFail

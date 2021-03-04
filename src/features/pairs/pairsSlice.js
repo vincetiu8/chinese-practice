@@ -430,13 +430,13 @@ const pairsSlice = createSlice({
 							{
 								id: state.solvingPair.id,
 								changes: {
-									flip: true
+									flip: false
 								}
 							},
 							{
 								id: answer,
 								changes: {
-									flip: true
+									flip: false
 								}
 							}
 						])

@@ -151,7 +151,7 @@ const pairsSlice = createSlice({
 				state.settings = JSON.parse(json)
 			}
 
-			let seenTerms = 0, learnedTerms = 0 // recalculate stats on reload
+			let seenTerms = 0, learnedTerms = 0, revisingTerms = 0 // recalculate stats on reload
 			const now = new Date()
 			const exactDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 			state.currentDate = exactDate.getTime()
@@ -160,11 +160,12 @@ const pairsSlice = createSlice({
 				if (term.seen > 0) {
 					seenTerms += 1
 					if (term.seen > 1) {
-						learnedTerms += 1
 						if (term.lastSeen <= state.currentDate - 86400000 * state.settings.dayInterval ** (term.seen - 2)) {
 							term.rank = 0
 							pairsAdapter.updateOne(state, term)
-							console.log(id)
+							revisingTerms += 1
+						} else {
+							learnedTerms += 1
 						}
 					}
 				}
@@ -182,7 +183,7 @@ const pairsSlice = createSlice({
 				history: history
 			}
 
-			let learnedTermsDay = 0, learnedTermsWeek = 0, learnedTermsMonth = 0
+			let learnedTermsDay = -revisingTerms, learnedTermsWeek = -revisingTerms, learnedTermsMonth = -revisingTerms
 			const currentMonth = new Date(state.currentDate - 2592000000) // unix value of 1 month
 			const currentWeek = new Date(state.currentDate - 604800000) // unix value of 1 week
 			const monthHistory = Object.keys(state.stats.history).filter(key => key > currentMonth)
@@ -391,7 +392,7 @@ const pairsSlice = createSlice({
 							flip: state.settings.flipTerms ? !state.solvingPair.flip : state.settings.askTerm
 						}
 					})
-					if (learned && state.solvingPair.seen === 1) {
+					if (learned) {
 						state.stats = {
 							...state.stats,
 							learnedTerms: state.stats.learnedTerms + 1
@@ -453,21 +454,6 @@ const pairsSlice = createSlice({
 						seen: 1
 					}
 				})
-				if (state.status !== "wrong" && state.solvingPair.seen > 1) {
-					state.stats = {
-						...state.stats,
-						learnedTerms: state.stats.learnedTerms - 1
-					}
-					state.historyStats = {
-						...state.historyStats,
-						learnedTerms: {
-							currentSession: state.historyStats.learnedTerms.currentSession - 1,
-							today: state.historyStats.learnedTerms.today - 1,
-							week: state.historyStats.learnedTerms.week - 1,
-							month: state.historyStats.learnedTerms.month - 1,
-						}
-					}
-				}
 				state.status = 'wrong'
 			}
 		},

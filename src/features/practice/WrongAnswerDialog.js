@@ -49,8 +49,9 @@ export const WrongAnswerDialog = () => {
 
 	const speak = (term) => {
 		const actualTerm = term ? pair.flip : !pair.flip
-		const speakText = new SpeechSynthesisUtterance(actualTerm ? pair.definition : pair.id)
-		speakText.lang = actualTerm ? 'en' : 'zh'
+		const text = actualTerm ? pair.definition : pair.id
+		const speakText = new SpeechSynthesisUtterance(text)
+		speakText.lang = /^[a-zA-Z0-9 ]*$/.test(text) ? 'en' : 'zh'
 		synth.speak(speakText)
 	}
 

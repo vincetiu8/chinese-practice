@@ -38,11 +38,12 @@ export const PracticeCard = () => {
 	}, [status, dispatch, pairIds.length])
 
 	const speakTerm = () => {
-		let speakText = new SpeechSynthesisUtterance(solvingPair.flip ? solvingPair.definition : solvingPair.id)
-		speakText.lang = solvingPair.flip ? 'en' : 'zh'
+		let text = solvingPair.flip ? solvingPair.definition : solvingPair.id
+		let speakText = new SpeechSynthesisUtterance(text)
+		speakText.lang = /^[a-zA-Z0-9 ]*$/.test(text) ? 'en' : 'zh'
 		synth.speak(speakText)
 	}
-	
+
 	useEffect(() => {
 		if (solvingPair !== null) {
 			if (loaded) {

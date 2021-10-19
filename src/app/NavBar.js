@@ -18,7 +18,7 @@ export const NavBar = () => {
 						<Menu/>
 					</IconButton>
 					<Typography variant="h6" color="inherit">
-						Chinese Practice App
+						Language Practice App
 					</Typography>
 				</Toolbar>
 			</AppBar>

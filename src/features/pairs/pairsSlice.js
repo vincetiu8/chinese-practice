@@ -51,8 +51,6 @@ const initialState = pairsAdapter.getInitialState({
 	}
 })
 
-const serverURL = "http://" + window.location.hostname + ":5000/"
-
 export const addPairs = createAsyncThunk(
 	'pairs/addPairs',
 	async content => {
@@ -65,35 +63,19 @@ export const addPairs = createAsyncThunk(
 				? [
 					rawLine.substr(0, rawLine.indexOf(' ')),
 					rawLine.substr(rawLine.indexOf(' ') + 1)
-				] : [rawLine]
+				] : rawLine.indexOf('\t') !== -1
+					? [
+						rawLine.substr(0, rawLine.indexOf('\t')),
+						rawLine.substr(rawLine.indexOf('\t') + 1)
+					] : [rawLine]
 		)
 
 		for (let pair of rawPairs) {
-			if (pair.length === 0)
-				continue
-			if (pair.length === 1) {
-				pairsToTranslate.push(pair[0])
-			} else {
+			if (pair.length > 1) {
 				pairs.push({
 					id: unorm.nfd(pair[0]).trim(),
 					definition: pair[1]
 				})
-			}
-		}
-
-		if (pairsToTranslate.length > 0) {
-			for (let i = 0; i < pairsToTranslate.length; i += 128) { // separated into 128 term chunks
-				console.log(serverURL)
-				const result = await axios.post(serverURL, { // hardcoded to avoid confusion
-					terms: pairsToTranslate.slice(i, Math.min(i + 128, pairsToTranslate.length))
-				})
-
-				for (let j = 0; j < result.data.length; j++) {
-					pairs.push({
-						id: unorm.nfd(pairsToTranslate[i + j]).trim(),
-						definition: result.data[j].translatedText.toLowerCase()
-					})
-				}
 			}
 		}
 

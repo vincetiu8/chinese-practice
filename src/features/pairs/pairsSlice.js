@@ -59,14 +59,14 @@ export const addPairs = createAsyncThunk(
 
 		const rawLines = content.split("\n")
 		const rawPairs = rawLines.map(rawLine =>
-			rawLine.indexOf(' ') !== -1
-				? [
-					rawLine.substr(0, rawLine.indexOf(' ')),
-					rawLine.substr(rawLine.indexOf(' ') + 1)
-				] : rawLine.indexOf('\t') !== -1
+			rawLine.indexOf('\t') !== -1 ? [
+					rawLine.substr(0, rawLine.indexOf('\t')),
+					rawLine.substr(rawLine.indexOf('\t') + 1)
+				] :
+				rawLine.indexOf(' ') !== -1
 					? [
-						rawLine.substr(0, rawLine.indexOf('\t')),
-						rawLine.substr(rawLine.indexOf('\t') + 1)
+						rawLine.substr(0, rawLine.indexOf(' ')),
+						rawLine.substr(rawLine.indexOf(' ') + 1)
 					] : [rawLine]
 		)
 

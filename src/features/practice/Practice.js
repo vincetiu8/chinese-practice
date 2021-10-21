@@ -3,7 +3,7 @@ import {WrongAnswerDialog} from "./WrongAnswerDialog";
 import {useDispatch, useSelector} from "react-redux";
 import {EditPairDialog} from "../pairs/EditPairDialog";
 import {StatCard} from "./StatCard";
-import {Grid} from "@material-ui/core";
+import {Grid, Typography} from "@material-ui/core";
 import {makeStyles} from "@material-ui/core/styles";
 import {HistoryStatCard} from "./HistoryStatCard";
 import {GoalMetDialog} from "./GoalMetDialog";
@@ -70,6 +70,14 @@ export const Practice = () => {
 							))
 						}
 					</Grid>
+				</Grid>
+				<Grid>
+					<Typography>
+						Welcome to this ultimate language practice website! This isn't just limited to languages, but
+						can also be used to memorize any pairs of terms and definitions. Just enter the matching term or
+						definition in the bar above and you'll be on your way to learning! Of course, if you haven't
+						added any pairs yet, you should probably add something to memorize.
+					</Typography>
 				</Grid>
 			</Grid>
 		</div>

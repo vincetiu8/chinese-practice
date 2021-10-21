@@ -1,5 +1,5 @@
 import {useSelector} from "react-redux";
-import {Grid} from "@material-ui/core";
+import {Card, CardContent, Grid, Typography} from "@material-ui/core";
 import {SettingsCardNumber} from "./SettingsCardNumber";
 import {DeletePracticeInfoCard} from "./DeletePracticeInfoCard"
 import {SettingsCardBool} from "./SettingsCardBool";
@@ -26,6 +26,16 @@ export const Settings = () => {
 				spacing={3}
 				className={classes.container}
 			>
+				<Grid item>
+					<Typography>
+						It's mostly fine to keep everything on default settings, the only thing you should pay attention
+						to here is the 'daily goal' setting. That is the number of new terms you want to learn each day.
+						This should be between 0 (if you want to just revise existing terms you've learned) to about 15.
+						Any more than that is overkill because on top of learning new terms, you will also be revising
+						old terms. Of course, there's no limit on the actual number of terms you can learn in a day, but
+						the goal helps you keep on track. It's better to set a low goal but reach it every day.
+					</Typography>
+				</Grid>
 				<Grid item>
 					<Grid container spacing={3} justify="center">
 						{
